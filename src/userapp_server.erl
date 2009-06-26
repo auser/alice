@@ -19,7 +19,8 @@ init(Args) ->
 set_conf([Port, WorkingDir]) ->
     GC = #gconf{
         trace = false, logdir = WorkingDir ++ "/logs",
-        yaws = "UserApp 1.0", tmpdir = WorkingDir ++ "/.yaws"
+        % yaws = "UserApp 1.0", tmpdir = WorkingDir ++ "/.yaws"
+        yaws = "UserApp 1.0"
     },
     SC = #sconf{
         port = Port, servername = "localhost", listen = {0, 0, 0, 0},

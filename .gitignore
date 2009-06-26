@@ -3,3 +3,6 @@
 *.beam
 pkg/*
 pkg
+erl_crash.dump
+logs
+userapp.mnesia

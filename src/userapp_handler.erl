@@ -112,10 +112,11 @@ text_or_default(Xml, Xpath, Default) ->
     end.
 
 object_counter(Name) ->
-    [OldRecord] = mnesia:read(counter, Name, write),
+    [OldRecord] = mnesia:activity(transaction, fun() -> mnesia:read(counter, Name, write) end),
     Count = OldRecord#counter.count + 1,
     NewRecord = OldRecord#counter{count = integer_to_list(Count)},
-    mnesia:write(NewRecord),
+    % mnesia:write(NewRecord),
+    mnesia:activity(transaction, fun() -> mnesia:write(NewRecord) end),
     integer_to_list(Count).
 
 record_to_xml(Rec) ->
