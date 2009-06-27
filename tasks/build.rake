@@ -41,6 +41,13 @@ desc "Compile everything"
 task :compile   => ["src:compile", "test:compile"]
 task :recompile => ["clean", "src:compile", "test:compile"]
 
+desc "Run"
+task :run do
+  str = "erl -sname temp -pa ebin -boot alice"
+  puts "Running #{str}"
+  Kernel.system str
+end
+
 namespace :src do
   desc "Compile src"
   task :compile => ['ebin'] + SRC_OBJ
@@ -49,7 +56,6 @@ namespace :src do
   task :boot_scripts do
     APPS.each do |appfile|
       str = "cd ebin; erl -pa ebin -noshell -run make_boot write_scripts #{::File.basename(appfile, ".app")}"
-      p str
       Kernel.system str
     end    
   end
