@@ -12,7 +12,7 @@ EXTRA_ERLC = DEPS_FILES.map {|a| "-pa #{a}/ebin" }.join(" ")
 
 ERLC_FLAGS = "-I#{INCLUDE} +warn_unused_vars +warn_unused_import -o ebin -W0 #{EXTRA_ERLC}"
 
-SRC        = FileList["src/*/*.erl"]
+SRC        = (FileList["src/*.erl"] + FileList["src/*/*.erl"])
 SRC_OBJ    = SRC.pathmap("%{src,ebin}X.beam")
 
 DEP        = DEPS_FILES.map {|d| FileList["#{d}/src/*.erl"]}
