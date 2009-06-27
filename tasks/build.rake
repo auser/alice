@@ -21,6 +21,8 @@ DEP_OBJ    = DEP.map {|d| d.pathmap("%{src,ebin}X.beam")}
 TEST       = FileList['test/src/*.erl']
 TEST_OBJ   = TEST.pathmap("%{src,ebin}X.beam")
 
+APPS       = FileList["ebin/*.app"]
+
 CLEAN.include("ebin/*.beam", "test/ebin/*.beam")
 
 directory 'ebin'
@@ -42,6 +44,15 @@ task :recompile => ["clean", "src:compile", "test:compile"]
 namespace :src do
   desc "Compile src"
   task :compile => ['ebin'] + SRC_OBJ
+  
+  desc "Make bootscripts"
+  task :boot_scripts do
+    APPS.each do |appfile|
+      str = "cd ebin; erl -pa ebin -noshell -run make_boot write_scripts #{::File.basename(appfile, ".app")}"
+      p str
+      Kernel.system str
+    end    
+  end
 end
 
 namespace :test do
