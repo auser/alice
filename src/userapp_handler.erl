@@ -88,7 +88,10 @@ handle_request('GET', "/status", _Arg) ->
             % XmlBody = userapp_handler:record_to_xml(User),
             % userapp_handler:make_response(200, XmlBody)
     % end;
-    userapp_handler:make_response(200, "hi");
+    io:format("hi people"),
+    Res = call_rabbitmq_action(returnstatus), 
+    Str = io_lib:format("~p~n", [Res]),
+    userapp_handler:make_response(200, Str);
 
 
 
@@ -153,3 +156,6 @@ find_record(UserId) ->
 
 delete_record(UserId) ->
     mnesia:activity(transaction, fun() -> mnesia:delete(user, UserId, write) end).
+
+call_rabbitmq_action(Command) ->
+    userapp_control:action(Command, rabbit_misc:localnode(rabbit), [], fun(_Format, _Args1) -> ok end).

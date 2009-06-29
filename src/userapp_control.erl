@@ -142,7 +142,11 @@ action(status, Node, [], Inform) ->
     Inform("Status of node ~p", [Node]),
     Res = call(Node, {rabbit, status, []}),
     io:format("~p~n", [Res]),
-    ok.
+    ok;
+
+action(returnstatus, Node, [], Inform) ->
+    Inform("Status of node ~p", [Node]),
+    call(Node, {rabbit, status, []}).
 
 % action(stop_app, Node, [], Inform) ->
 %     Inform("Stopping node ~p", [Node]),
