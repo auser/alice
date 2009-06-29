@@ -12,7 +12,8 @@ utils:
 	$(CC) $(CFLAGS) -o $(EBIN) src/utils/*.erl
 	
 rest:
-	$(CC) $(CFLAGS) -o $(EBIN) src/REST/*.erl
+	$(CC) $(CFLAGS) -o $(EBIN) src/REST/rest_server.erl
+	$(CC) $(CFLAGS) -o $(EBIN) src/REST/rest_app.erl
 
 make_boot:
 	(cd ebin; erl -pa ebin -noshell -run make_boot write_scripts rest_app)
@@ -24,4 +25,4 @@ ebin:
 	@mkdir ebin
 
 clean:
-	(rm ebin/*.beam;rm ebin/erl_crash.dump;rm erl_crash.dump; rm ebin/*.boot; rm ebin/*.rel; rm ebin/*.script)
+	(rm ebin/*.beam;rm ebin/erl_crash.dump;rm erl_crash.dump; rm ebin/*.boot; rm ebin/*.rel; rm ebin/*.script) 2> /dev/null
