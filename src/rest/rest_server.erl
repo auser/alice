@@ -42,8 +42,11 @@ start_link(Args) ->
 %%                         {stop, Reason}
 %% Description: Initiates the server
 %%--------------------------------------------------------------------
+% TODO: Update port args with config variables
 init([Args]) ->
   io:format("Starting ~p~n", [?MODULE]),
+  mochiweb_http:start([ {port, Args},
+                        {loop, fun dispatch_requests/1}]),
   {ok, #state{}}.
 
 %%--------------------------------------------------------------------
