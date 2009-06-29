@@ -3,6 +3,7 @@ VERSION	= 0.0.1
 CC  		= erlc
 EBIN		= ebin
 CFLAGS  = -I include -pa $(EBIN)
+COMPILE	= $(CC) $(CFLAGS) -o $(EBIN)
 
 all: ebin utils rest make_boot
 
@@ -11,11 +12,14 @@ start: all start_all
 utils:
 	$(CC) $(CFLAGS) -o $(EBIN) src/utils/*.erl
 	
-rest:
-	$(CC) $(CFLAGS) -o $(EBIN) src/REST/rest_server.erl
-	$(CC) $(CFLAGS) -o $(EBIN) src/REST/rest_server_sup.erl
-	$(CC) $(CFLAGS) -o $(EBIN) src/REST/rest_app.erl
+rest: rest_controllers
+	$(COMPILE) src/rest/rest_server.erl
+	$(COMPILE) src/rest/rest_server_sup.erl
+	$(COMPILE) src/rest/rest_app.erl
 
+rest_controllers:
+	$(COMPILE) src/rest/users.erl
+	
 clean_rest: clean utils rest make_boot
 	erl -boot ebin/rest_app
 

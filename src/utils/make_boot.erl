@@ -5,14 +5,17 @@ write_scripts(Args) ->
         [Name] = Args,
         io:format("write_scripts for ~p~n", [Name]),
         Erts = erlang:system_info(version),
+        application:load(sasl),
         Version = "0.1",
         {value, {kernel, _, Kernel}} = lists:keysearch(kernel, 1,
                 application:loaded_applications()),
         {value, {stdlib, _, Stdlib}} = lists:keysearch(stdlib, 1,
                 application:loaded_applications()),
+        {value, {sasl, _, Sasl}} = lists:keysearch(sasl, 1,
+                application:loaded_applications()),
 
         Rel = "{release, {\"~s\", \"~s\"}, {erts, \"~s\"}, ["
-               "{kernel, \"~s\"}, {stdlib, \"~s\"}, {~s, \"~s\"}]}.",
+               "{kernel, \"~s\"}, {stdlib, \"~s\"}, {sasl, \"~s\"}, {~s, \"~s\"}]}.",
         
         Lowername = string:to_lower(Name),
         
@@ -20,7 +23,7 @@ write_scripts(Args) ->
         io:format("Writing to ~p (as ~s)~n", [Filename, Lowername]),
         {ok, Fs} = file:open(Filename, [write]),
         
-        io:format(Fs, Rel, [Name, Version, Erts, Kernel, Stdlib, Lowername, Version]),
+        io:format(Fs, Rel, [Name, Version, Erts, Kernel, Stdlib, Sasl, Lowername, Version]),
         file:close(Fs),
         
         systools:make_script(Lowername, [local]),

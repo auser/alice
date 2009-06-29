@@ -44,9 +44,8 @@ start_link(Args) ->
 %%--------------------------------------------------------------------
 % TODO: Update port args with config variables
 init([Args]) ->
-  io:format("Starting ~p~n", [?MODULE]),
-  mochiweb_http:start([ {port, Args},
-                        {loop, fun dispatch_requests/1}]),
+  io:format("Starting ~p with ~p~n", [?MODULE, Args]),
+  start_mochiweb(Args),
   {ok, #state{}}.
 
 %%--------------------------------------------------------------------
@@ -100,3 +99,43 @@ code_change(_OldVsn, State, _Extra) ->
 %%--------------------------------------------------------------------
 %%% Internal functions
 %%--------------------------------------------------------------------
+start_mochiweb(Args) ->
+  [Port] = Args,
+  io:format("Starting mochiweb_http with ~p~n", [Port]),
+  mochiweb_http:start([ {port, Port},
+                        {loop, fun dispatch_requests/1}]).
+
+dispatch_requests(Req) ->
+  Path = Req:get(path),
+  Action = clean_path(Path),
+  handle(Action, Req).
+  
+% Handle the requests
+handle("/favicon.ico", Req) -> Req:respond({200, [{"Content-Type", "text/html"}], ""});
+
+handle(Path, Req) ->
+  CleanPath = clean_path(Path),
+  ControllerAtom = erlang:list_to_atom(top_level_request(CleanPath)),
+  io:format("Sending to ~p~n", [ControllerAtom]),
+  case Req:get(method) of
+    'GET' -> Req:respond({200, [{"Content-Type", "text/html"}], ControllerAtom:get(Req)});
+    'POST' -> Req:respond({200, [{"Content-Type", "text/html"}], ControllerAtom:post(Req)});
+    'PUT' -> Req:respond({200, [{"Content-Type", "text/html"}], ControllerAtom:put(Req)});
+    'DELETE' -> Req:respond({200, [{"Content-Type", "text/html"}], ControllerAtom:delete(Req)});
+    Other -> Req:respond({200, [{"Content-Type", "text/html"}], subst("Other ~p on: ~s~n", [users, Other])})
+  end.
+
+subst(Template, Values) when is_list(Values) ->
+  list_to_binary(lists:flatten(io_lib:fwrite(Template, Values))).
+
+% Get a clean path
+% strips off the query string
+clean_path(Path) ->
+  case string:str(Path, "?") of
+    0 -> Path;
+    N -> string:substr(Path, 1, string:len(Path) - (N+1))
+  end.
+
+top_level_request(Path) ->
+  [CleanPath|_Others] = string:tokens(Path, "/"),
+  CleanPath.

@@ -6,7 +6,7 @@
           {port, 9999}
         ]},
         {registered, [rest_app, rest_server]},
-        {applications, [kernel, stdlib]},
+        {applications, [kernel, stdlib, sasl]},
         {mod, {rest_app, []}}
 ]}.
 
