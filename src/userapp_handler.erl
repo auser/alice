@@ -81,6 +81,17 @@ handle_request('DELETE', "/user/" ++ UserID, _Arg) ->
             end
     end;
 
+handle_request('GET', "/status", _Arg) ->
+    % case userapp_handler:find_record(UserID) of
+        % [] -> userapp_handler:make_response(404, "<error>No user for that id.</error>");
+        % [User] ->
+            % XmlBody = userapp_handler:record_to_xml(User),
+            % userapp_handler:make_response(200, XmlBody)
+    % end;
+    userapp_handler:make_response(200, "hi");
+
+
+
 handle_request(_, _, _Arg) -> % catchall
     userapp_handler:make_response(501, "<error>Action not implemented.</error>").
 

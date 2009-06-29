@@ -4,6 +4,9 @@
 -export([start/2, stop/1, start_phase/3]).
 -include("userapp.hrl").
 
+start_application() ->
+  application:start(userapp).
+
 start(_Type, _Args) ->
     application:start(inets),
     Args = lists:map(
