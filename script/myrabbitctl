@@ -1,0 +1,15 @@
+#!/bin/sh
+
+[ -f /etc/rabbitmq/rabbitmq.conf ] && . /etc/rabbitmq/rabbitmq.conf
+
+[ "x" = "x$RABBITMQ_CTL_ERL_ARGS" ] && RABBITMQ_CTL_ERL_ARGS=${CTL_ERL_ARGS}
+
+exec erl \
+    -pa "`dirname $0`/../../rabbitmq-server/ebin" \
+    -pa "`dirname $0`/../ebin" \
+    -noinput \
+    -hidden \
+    ${RABBITMQ_CTL_ERL_ARGS} \
+    -sname rabbitmqctl$$ \
+    -s userapp_control \
+    -extra "$@"
