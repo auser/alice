@@ -1,0 +1,2 @@
+-module (testing).
+-compile (export_all).

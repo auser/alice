@@ -12,7 +12,7 @@ EXTRA_ERLC = DEPS_FILES.map {|a| "-pa #{a}/ebin" }.join(" ")
 
 ERLC_FLAGS = "-I#{INCLUDE} +warn_unused_vars +warn_unused_import -o ebin -W0 #{EXTRA_ERLC}"
 
-SRC        = FileList["src/*.erl"]
+SRC        = (FileList["src/*.erl"] + FileList["src/*/*.erl"])
 SRC_OBJ    = SRC.pathmap("%{src,ebin}X.beam")
 
 DEP        = DEPS_FILES.map {|d| FileList["#{d}/src/*.erl"]}
@@ -20,6 +20,8 @@ DEP_OBJ    = DEP.map {|d| d.pathmap("%{src,ebin}X.beam")}
 
 TEST       = FileList['test/src/*.erl']
 TEST_OBJ   = TEST.pathmap("%{src,ebin}X.beam")
+
+APPS       = FileList["ebin/*.app"]
 
 CLEAN.include("ebin/*.beam", "test/ebin/*.beam")
 
@@ -39,9 +41,24 @@ desc "Compile everything"
 task :compile   => ["src:compile", "test:compile"]
 task :recompile => ["clean", "src:compile", "test:compile"]
 
+desc "Run"
+task :run do
+  str = "erl -sname temp -pa ebin -boot alice"
+  puts "Running #{str}"
+  Kernel.system str
+end
+
 namespace :src do
   desc "Compile src"
   task :compile => ['ebin'] + SRC_OBJ
+  
+  desc "Make bootscripts"
+  task :boot_scripts do
+    APPS.each do |appfile|
+      str = "cd ebin; erl -pa ebin -noshell -run make_boot write_scripts #{::File.basename(appfile, ".app")}"
+      Kernel.system str
+    end    
+  end
 end
 
 namespace :test do

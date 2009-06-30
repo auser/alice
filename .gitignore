@@ -6,3 +6,4 @@ pkg
 erl_crash.dump
 logs
 userapp.mnesia
+test/include
