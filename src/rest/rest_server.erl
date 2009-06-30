@@ -117,14 +117,21 @@ handle(Path, Req) ->
   CleanPath = clean_path(Path),
   ControllerAtom = erlang:list_to_atom(top_level_request(CleanPath)),
   io:format("Sending to ~p~n", [ControllerAtom]),
-  case Req:get(method) of
-    'GET' -> Req:respond({200, [{"Content-Type", "text/html"}], ControllerAtom:get(Req)});
-    'POST' -> Req:respond({200, [{"Content-Type", "text/html"}], ControllerAtom:post(Req)});
-    'PUT' -> Req:respond({200, [{"Content-Type", "text/html"}], ControllerAtom:put(Req)});
-    'DELETE' -> Req:respond({200, [{"Content-Type", "text/html"}], ControllerAtom:delete(Req)});
-    Other -> Req:respond({200, [{"Content-Type", "text/html"}], subst("Other ~p on: ~s~n", [users, Other])})
-  end.
+  [Headers|Body] = case Req:get(method) of
+    'GET' -> ControllerAtom:get(Req);
+    'POST' -> ControllerAtom:post(Req);
+    'PUT' -> ControllerAtom:put(Req);
+    'DELETE' -> ControllerAtom:delete(Req);
+    Other -> subst("Other ~p on: ~s~n", [users, Other])
+  end,
+  AllHeaders = make_headers(Headers),
+  Req:respond({200, AllHeaders, Body}).
 
+% headers method
+make_headers(HeadersList) ->
+  io:format("Came with ~p~n", [HeadersList]),
+  utils:append([HeadersList], [{"Content-Type", "text/plain"}]).
+  
 subst(Template, Values) when is_list(Values) ->
   list_to_binary(lists:flatten(io_lib:fwrite(Template, Values))).
 
