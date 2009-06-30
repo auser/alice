@@ -11,12 +11,15 @@ get(Req) ->
       "all users: " ++ Users;
     [Id] -> "id for " ++ Id ++ " user"
   end,  
-  Out = AOut ++ " on rabbit node " ++ erlang:atom_to_list(Node),
+  Out = AOut ++ " on rabbit node " ++ mochijson2:encode(Node),
   [{"Content-Type", "text/html"}, Out].
 
 post(_Req) -> "unhandled".
 put(_Req) -> "unhandled".
 delete(_Req) -> "unhandled".
+
+
+% MOVING TO UTILS
 
 call(Node, {Mod, Fun, Args}) ->
     rpc_call(Node, Mod, Fun, lists:map(fun list_to_binary/1, Args)).
