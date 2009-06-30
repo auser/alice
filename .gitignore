@@ -1,3 +1,5 @@
 *.beam
 erl_crash.dump
 test/include
+.DS_Store
+.autosession.vim
