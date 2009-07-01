@@ -20,6 +20,7 @@
         
         }).
 -define(SERVER, ?MODULE).
+-define(JSON_ENCODE(V), mochijson2:encode(V)).
 
 %%====================================================================
 %% API
