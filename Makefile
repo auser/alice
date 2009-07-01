@@ -21,13 +21,13 @@ rest_controllers:
 	$(COMPILE) src/rest/users.erl
 	
 clean_rest: clean utils rest make_boot
-	erl -boot ebin/rest_app
+	erl -sname alice -boot ebin/rest_app
 
 make_boot:
 	(cd ebin; erl -pa ebin -noshell -run make_boot write_scripts rest_app)
 
 start_all:
-	(cd ebin; erl -pa ebin -noshell -boot alice)
+	(cd ebin; erl -pa ebin -noshell -sname alice -boot alice)
 
 ebin:
 	@mkdir ebin

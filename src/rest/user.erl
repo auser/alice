@@ -1,34 +1,45 @@
 -module (users).
 -export ([get/1, post/1, put/1, delete/1]).
--define(RPC_TIMEOUT, 30000).
+-define(JSON_ENCODE(V), mochijson2:encode(V)).
 
 get(Req) ->
   ["users"|Path] = string:tokens(Req:get(path), "/"),
-  [Node|_Other] = rabbit_node(),
-  AOut = case Path of
-    [] -> 
-      Users = call(Node, {rabbit_access_control, list_users, []}),
-      "all users: " ++ Users;
-    [Id] -> "id for " ++ Id ++ " user"
-  end,  
-  Out = AOut ++ " on rabbit node " ++ mochijson2:encode(Node),
-  [{"Content-Type", "text/html"}, Out].
+  Out = case Path of
+    % /users => All users
+    [] -> get_all_users();
+    % /users/2 => User for id
+    [Id] -> Id
+  end,
+  {"users", Out}.
 
-post(_Req) -> "unhandled".
+post(Req) -> 
+  Data = Req:recv_body(),
+
+  {struct, Struct} = mochijson2:decode(Data),
+  
+  Username = erlang:binary_to_list(proplists:get_value(<<"username">>, Struct)),
+  Password = erlang:binary_to_list(proplists:get_value(<<"password">>, Struct)),
+
+  case rabint:call({rabbit_access_control, add_user, [Username,Password]}) of
+    ok -> erlang:list_to_binary([<<"ok">>]);
+    {_Error, _} -> erlang:list_to_binary([<<"error">>])
+  end,
+  {"users", get_all_users()}.
+  
 put(_Req) -> "unhandled".
-delete(_Req) -> "unhandled".
 
+delete(Req) -> 
+  ["users"|Id] = string:tokens(Req:get(path), "/"),
+  case rabint:call({rabbit_access_control, delete_user, [Id]}) of
+    ok -> erlang:list_to_binary([<<"ok">>]);
+    {_Error, _} -> erlang:list_to_binary([<<"error">>])
+  end,
+  {"users", get_all_users()}.
+  
+% PRIVATE
 
-% MOVING TO UTILS
-
-call(Node, {Mod, Fun, Args}) ->
-    rpc_call(Node, Mod, Fun, lists:map(fun list_to_binary/1, Args)).
-
-rpc_call(Node, Mod, Fun, Args) ->
-    rpc:call(Node, Mod, Fun, Args, ?RPC_TIMEOUT).
-    
-% Get rabbit node
-rabbit_node() ->
-  {value, {nodes, Nodes}} = lists:keysearch(nodes, 1,
-          rabbit:status()),
-  Nodes.
+get_all_users() ->
+  case rabint:call({rabbit_access_control, list_users, []}) of
+    {ok, Bin} -> Bin;
+    {_Error, _} -> erlang:list_to_binary([<<"no users">>])
+  end.
