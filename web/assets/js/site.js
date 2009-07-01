@@ -3,19 +3,17 @@ $(function(){
  var aliceUrl = "http://localhost:9999";
  
 	// Status
- $.ajax({
-   url: aliceUrl + "/control/status",
-   cache: false,
-   dataType: "json",
-   success: function(data){
-     $("#status").append("<h3>Applications</h3><p>"+data.status[0].applications+"</p>");
-     $("#status").append("<h3>Nodes</h3><p>"+data.status[0].nodes+"</p>");
-     $("#status").append("<h3>Running Nodes</h3><p>"+data.status[0].running_nodes+"</p>");
-   },
-   error: function(e, xhr){
-     alert("Error: "+e)
-   }
- });
+	$.ajax({
+	  url: aliceUrl + "/control/status",
+	  cache: false,
+	  dataType: "json",
+	  success: function(data){
+	    $("#status").append("<h3>Applications</h3><p>"+data.status[0].applications+"</p>");
+	    $("#status").append("<h3>Nodes</h3><p>"+data.status[0].nodes+"</p>");
+	    $("#status").append("<h3>Running Nodes</h3><p>"+data.status[0].running_nodes+"</p>");
+	  },
+		error: function(e, xhr){}
+	});
  
 	// Users
 	$.ajax({
@@ -29,9 +27,7 @@ $(function(){
 			});	    
 			$("#users").append("</ul>")
 	  },
-	  error: function(e, xhr){
-	    alert("Error: "+e)
-	  }
+	  error: function(e, xhr){}
 	});
 	
 	// Vhosts
@@ -46,9 +42,7 @@ $(function(){
 			});	    
 			$("#vhosts").append("</ul>")
 	  },
-	  error: function(e, xhr){
-	    alert("Error: "+e)
-	  }
+		error: function(e, xhr){}
 	});
  
 });
