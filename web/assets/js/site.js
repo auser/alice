@@ -13,7 +13,7 @@ $(function(){
 	    $("#status").append("<h3>Running Nodes</h3><p>"+data.status[0].running_nodes+"</p>");
 	  },
 		error: function(e, xhr){
-			$("#users").append("<b>Error accessing status</b>")
+			$("#status").append("<b>Error accessing status</b>")
 		}
 	});
  
@@ -47,7 +47,7 @@ $(function(){
 			$("#vhosts").append("</ul>")
 	  },
 		error: function(e, xhr){
-			$("#users").append("<b>Error accessing vhosts</b>")
+			$("#vhosts").append("<b>Error accessing vhosts</b>")
 		}
 	});
  
