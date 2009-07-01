@@ -118,27 +118,29 @@ handle(Path, Req) ->
   CleanPath = clean_path(Path),
   ControllerAtom = erlang:list_to_atom(top_level_request(CleanPath)),
   Body = case Req:get(method) of
-    'GET' -> ControllerAtom:get(Req);
-    'POST' -> ControllerAtom:post(Req);
-    'PUT' -> ControllerAtom:put(Req);
-    'DELETE' -> ControllerAtom:delete(Req);
+    'GET' -> ControllerAtom:get(CleanPath);
+    'POST' -> ControllerAtom:post(CleanPath, decode_data_from_request(Req));
+    'PUT' -> ControllerAtom:put(CleanPath, decode_data_from_request(Req));
+    'DELETE' -> ControllerAtom:delete(CleanPath);
     Other -> subst("Other ~p on: ~s~n", [users, Other])
   end,
   JsonBody = jsonify(Body),
-  Req:ok({"text/javascript", JsonBody}).
+  Req:ok({"text/json", JsonBody}).
 
-jsonify(Body) ->
+jsonify(JsonifiableBody) ->
   [ ?JSON_ENCODE({
         struct, [
-          Body
+          JsonifiableBody
         ]
     })
   ].
-% headers method
-make_headers(HeadersList) ->
-  io:format("Came with ~p~n", [HeadersList]),
-  utils:append([HeadersList], [{"Content-Type", "text/plain"}]).
-  
+    
+% Get the data off the request
+decode_data_from_request(Req) ->
+  Data = Req:recv_body(),
+  {struct, Struct} = mochijson2:decode(Data),
+  Struct.
+
 subst(Template, Values) when is_list(Values) ->
   list_to_binary(lists:flatten(io_lib:fwrite(Template, Values))).
 
@@ -151,5 +153,7 @@ clean_path(Path) ->
   end.
 
 top_level_request(Path) ->
-  [CleanPath|_Others] = string:tokens(Path, "/"),
-  CleanPath.
+  case string:tokens(Path, "/") of
+    [CleanPath|_Others] -> CleanPath;
+    [] -> "home"
+  end.

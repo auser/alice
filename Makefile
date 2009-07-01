@@ -1,28 +1,24 @@
-LIBDIR	= `erl -eval 'io:format("~s~n", [code:lib_dir()])' -s init stop -noshell`
-VERSION	= 0.0.1
-CC  		= erlc
-EBIN		= ebin
-CFLAGS  = -I include -pa $(EBIN)
-COMPILE	= $(CC) $(CFLAGS) -o $(EBIN)
+LIBDIR		= `erl -eval 'io:format("~s~n", [code:lib_dir()])' -s init stop -noshell`
+VERSION		= 0.0.1
+CC  			= erlc
+ERL     	= erl
+EBIN			= ebin
+CFLAGS  	= -I include -pa $(EBIN)
+COMPILE		= $(CC) $(CFLAGS) -o $(EBIN)
+EBIN_DIRS = $(wildcard deps/*/ebin)
 
-all: ebin utils rest make_boot
-
+all: mochi ebin compile
 start: all start_all
 
-utils:
-	$(CC) $(CFLAGS) -o $(EBIN) src/utils/*.erl
-	
-rest: rest_controllers
-	$(COMPILE) src/rest/rest_server.erl
-	$(COMPILE) src/rest/rest_server_sup.erl
-	$(COMPILE) src/rest/rest_app.erl
+mochi:
+	@(cd deps/mochiweb;$(MAKE))
 
-rest_controllers:
-	$(COMPILE) src/rest/users.erl
-	
-clean_rest: clean utils rest make_boot
-	erl -sname alice -boot ebin/rest_app
+compile:
+	@$(ERL) -pa $(EBIN_DIRS) -noinput +B -eval 'case make:all() of up_to_date -> halt(0); error -> halt(1) end.'
 
+edoc:
+	@erl -noshell -run edoc_run application '$(APP)' '"."' '[]'
+	
 make_boot:
 	(cd ebin; erl -pa ebin -noshell -run make_boot write_scripts rest_app)
 
