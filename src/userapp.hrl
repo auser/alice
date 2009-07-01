@@ -1,2 +1,0 @@
--record(user, {id, name, password, email, website}).
--record(counter, {type, count}).
