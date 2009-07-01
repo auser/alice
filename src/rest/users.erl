@@ -1,6 +1,5 @@
 -module (users).
 -export ([get/1, post/1, put/1, delete/1]).
--define(JSON_ENCODE(V), mochijson2:encode(V)).
 
 get(Req) ->
   ["users"|Path] = string:tokens(Req:get(path), "/"),
