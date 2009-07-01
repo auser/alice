@@ -12,7 +12,9 @@ $(function(){
 	    $("#status").append("<h3>Nodes</h3><p>"+data.status[0].nodes+"</p>");
 	    $("#status").append("<h3>Running Nodes</h3><p>"+data.status[0].running_nodes+"</p>");
 	  },
-		error: function(e, xhr){}
+		error: function(e, xhr){
+			$("#users").append("<b>Error accessing status</b>")
+		}
 	});
  
 	// Users
@@ -27,7 +29,9 @@ $(function(){
 			});	    
 			$("#users").append("</ul>")
 	  },
-	  error: function(e, xhr){}
+	  error: function(e, xhr){
+			$("#users").append("<b>Error accessing users</b>")
+		}
 	});
 	
 	// Vhosts
@@ -42,7 +46,9 @@ $(function(){
 			});	    
 			$("#vhosts").append("</ul>")
 	  },
-		error: function(e, xhr){}
+		error: function(e, xhr){
+			$("#users").append("<b>Error accessing vhosts</b>")
+		}
 	});
  
 });
