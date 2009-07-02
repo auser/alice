@@ -1,0 +1,19 @@
+body { margin: 20px 0 0 0; }
+p {
+	font:60px/100px Helvetica;
+	color: #000;
+	text-align: center;
+	border: 1px solid #000;
+	margin: 0 0 20px 0;
+}
+
+ul {
+	list-style-type: none;
+}
+
+li {
+	padding-left: 20px;
+	margin-bottom: 5px;
+	border-left:1px solid #333;
+	list-style-type: none;
+}

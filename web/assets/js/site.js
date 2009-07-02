@@ -8,9 +8,24 @@ $(function(){
 	  cache: false,
 	  dataType: "json",
 	  success: function(data){
-	    $("#status").append("<h3>Applications</h3><p>"+data.status[0].applications+"</p>");
-	    $("#status").append("<h3>Nodes</h3><p>"+data.status[0].nodes+"</p>");
-	    $("#status").append("<h3>Running Nodes</h3><p>"+data.status[0].running_nodes+"</p>");
+			var status = data.status[0];
+	    $("#status").append("<h3>Applications</h3><ul>")		
+			$(status.applications).each(function(i,app){
+				$("#status").append("<li>"+app+"</li>");
+			});
+			$("#status").append("</ul>");
+			
+			$("#status").append("<h3>Nodes</h3><ul>")		
+			$(status.nodes).each(function(i,app){
+				$("#status").append("<li>"+app+"</li>");
+			});
+			$("#status").append("</ul>");
+			
+			$("#status").append("<h3>Running nodes</h3><ul>")		
+			$(status.running_nodes).each(function(i,app){
+				$("#status").append("<li>"+app+"</li>");
+			});
+			$("#status").append("</ul>");
 	  },
 		error: function(e, xhr){
 			$("#status").append("<b>Error accessing status</b>")
