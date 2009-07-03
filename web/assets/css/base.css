@@ -14,6 +14,5 @@ ul {
 li {
 	padding-left: 20px;
 	margin-bottom: 5px;
-	border-left:1px solid #333;
-	list-style-type: none;
+	list-style-type: square;
 }

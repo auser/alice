@@ -116,12 +116,15 @@ handle("/favicon.ico", Req) -> Req:respond({200, [{"Content-Type", "text/html"}]
 
 handle(Path, Req) ->
   CleanPath = clean_path(Path),
-  ControllerAtom = erlang:list_to_atom(top_level_request(CleanPath)),
+  ControllerAtom = erlang:list_to_atom(top_level_request(CleanPath)),    
+  ControllerPath = parse_controller_path(CleanPath),
+
+  io:format("ControllerPath: ~p~n", [ControllerPath]),
   Body = case Req:get(method) of
-    'GET' -> ControllerAtom:get(CleanPath);
-    'POST' -> ControllerAtom:post(CleanPath, decode_data_from_request(Req));
-    'PUT' -> ControllerAtom:put(CleanPath, decode_data_from_request(Req));
-    'DELETE' -> ControllerAtom:delete(CleanPath);
+    'GET' -> ControllerAtom:get(ControllerPath);
+    'POST' -> ControllerAtom:post(ControllerPath, decode_data_from_request(Req));
+    'PUT' -> ControllerAtom:put(ControllerPath, decode_data_from_request(Req));
+    'DELETE' -> ControllerAtom:delete(ControllerPath, decode_data_from_request(Req));
     Other -> subst("Other ~p on: ~s~n", [users, Other])
   end,
   JsonBody = jsonify(Body),
@@ -137,12 +140,23 @@ jsonify(JsonifiableBody) ->
     
 % Get the data off the request
 decode_data_from_request(Req) ->
-  Data = Req:recv_body(),
+  Data = case Req:recv_body() of
+    <<>> -> 
+      erlang:list_to_binary("{}");
+    Body -> Body
+  end,
   {struct, Struct} = mochijson2:decode(Data),
   Struct.
 
 subst(Template, Values) when is_list(Values) ->
   list_to_binary(lists:flatten(io_lib:fwrite(Template, Values))).
+
+% parse the controller path
+parse_controller_path(CleanPath) ->
+  CPath = case string:tokens(CleanPath, "/") of
+    [] -> [];
+    [_RootPath|Rest] -> Rest
+  end.
 
 % Get a clean path
 % strips off the query string

@@ -1,16 +1,16 @@
 -module (users).
--export ([get/1, post/2, put/2, delete/1]).
+-export ([get/1, post/2, put/2, delete/2]).
 
 % add_user        <UserName> <Password>
 % delete_user     <UserName>
 % change_password <UserName> <NewPassword>
 % list_users
 
-get("/users")         -> {"users", get_all_users()};
-get("/users/"++Id)    -> {"users", Id};
+get([])         -> {"users", get_all_users()};
+get([Id])    -> {"users", erlang:list_to_binary(Id)};
 get(_Path)            -> {"users", ""}.
 
-post("/users", Json) ->   
+post([], Json) ->   
   [Username, Password] = get_username_and_password_from_json(Json),
   case rabint:call({rabbit_access_control, add_user, [Username,Password]}) of
     ok -> {"users", get_all_users()};
@@ -18,7 +18,7 @@ post("/users", Json) ->
   end;
 post(_Path, _Json) -> {"error",<<"Undefined route">>}.
 
-put("/users/"++Id, _Json) ->
+put([Id], _Json) ->
   case rabint:call({rabbit_access_control, change_password, [Id]}) of
     ok -> {"users", get_all_users()};
     {Error, _} -> {"users", Error}
@@ -26,13 +26,14 @@ put("/users/"++Id, _Json) ->
   
 put(_Path, _Json) -> {"error",<<"unhandled">>}.
 
-delete("/users/"++Id) ->
+delete([Id], _Data) ->
+  io:format("Delete with ~p~n", [Id]),
   case rabint:call({rabbit_access_control, delete_user, [Id]}) of
     ok -> {"users", get_all_users()};
     {Error, _} -> {"error", Error}
   end;
 
-delete(_Route) -> {"error",<<"unhandled">>}.
+delete(_Path, _Data) -> {"error", <<"unhandled">>}.
 
 % PRIVATE / INTERNAL
 get_username_and_password_from_json(Json) ->
@@ -42,6 +43,6 @@ get_username_and_password_from_json(Json) ->
   
 get_all_users() ->
   case rabint:call({rabbit_access_control, list_users, []}) of
-    {ok, Bin} -> Bin;
-    {_Error, _} -> erlang:list_to_binary([<<"no users">>])
+    {_Error, _} -> erlang:list_to_binary([<<"no users">>]);
+    Bin -> Bin    
   end.

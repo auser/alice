@@ -1,5 +1,5 @@
 -module (control).
--export ([get/1, post/2, put/2, delete/1]).
+-export ([get/1, post/2, put/2, delete/2]).
 
 % stop      - stops the RabbitMQ application and halts the node
 % stop_app  - stops the RabbitMQ application, leaving the node running
@@ -10,7 +10,7 @@
 % status
 % rotate_logs [Suffix]
 
-get("/control/status") ->
+get(["status"]) ->
   case rabint:call({rabbit, status, []}) of
     Bin -> 
       {value, {running_applications, JApps}} = lists:keysearch(running_applications, 1, Bin),
@@ -25,37 +25,38 @@ get("/control/status") ->
       Jsonable = [{struct, [{"applications", Apps}, {"nodes", Nodes}, {"running_nodes", RunningNodes}]}],
       {"status", Jsonable}
   end;  
-  
+
+get([]) -> {"control",<<"status">>};
 get(_Path) -> {"error", <<"unhandled">>}.
 
 
-post("/control/stop", _Data) ->
+post(["stop"], _Data) ->
   rabint:call({rabbit, stop_and_halt, []}),
   {"status", <<"stopped">>};
 
-post("/control/stop_app", _Data) ->
+post(["stop_app"], _Data) ->
   rabint:call({rabbit, stop, []}),
   {"status", <<"stopped">>};
 
-post("/control/start_app", _Data) ->
+post(["start_app"], _Data) ->
   rabint:call({rabbit, start, []}),
   {"status", <<"started">>};    
   
-post("/control/reset", _Data) ->
+post(["reset"], _Data) ->
   rabint:call({rabbit_mnesia, reset, []}),
   {"status", <<"reset">>};
   
-post("/control/force_reset", _Data) ->
+post(["force_reset"], _Data) ->
   rabint:call({rabbit_mnesia, force_reset, []}),
   {"status", <<"reset">>};
   
-post("/control/cluster", Data) ->
+post(["cluster"], Data) ->
   ClusterNodeSs = erlang:binary_to_list(proplists:get_value(<<"nodes">>, Data)),
   ClusterNodes = lists:map(fun list_to_atom/1, ClusterNodeSs),
   rabint:call({rabbit_mnesia, cluster, [ClusterNodes]}),
   {"status", <<"cluster">>};
 
-post("/control/rotate_logs", Data) ->
+post(["rotate_logs"], Data) ->
   Prefix = erlang:binary_to_list(proplists:get_value(<<"prefix">>, Data)),
   rabint:call({rabbit, rotate_logs, [Prefix]}),
   {"status", <<"rotated_logs">>};
@@ -63,4 +64,4 @@ post("/control/rotate_logs", Data) ->
 post(_Path, _Data) -> {"error", <<"unhandled">>}.
 
 put(_Path, _Data) -> {"error", <<"unhandled">>}.
-delete(_Path) -> {"error", <<"unhandled">>}.
+delete(_Path, _Data) -> {"error", <<"unhandled">>}.
