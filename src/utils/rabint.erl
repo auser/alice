@@ -8,3 +8,4 @@ rpc_call(Mod, Fun, Args)  -> rpc:call(rabbit_node(), Mod, Fun, Args, ?RPC_TIMEOU
 
 % Get the local rabbit node
 rabbit_node()             -> rabbit_misc:localnode(rabbit).
+ping_rabbit()							-> net_adm:ping(rabbit_node()).

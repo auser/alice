@@ -1,0 +1,2 @@
+-define(SOFTWARE_NAME, "------------- Alice ------------").
+-define(COPYRIGHT_MESSAGE, "Copyright (C) 2009 Ari Lerner, Nate Murray, Michael Fairchild, CloudTeam").

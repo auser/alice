@@ -8,6 +8,7 @@ COMPILE		= $(CC) $(CFLAGS) -o $(EBIN)
 EBIN_DIRS = $(wildcard deps/*/ebin)
 
 all: mochi ebin compile
+all_boot: all make_boot
 start: all start_all
 
 mochi:

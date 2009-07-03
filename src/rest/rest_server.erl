@@ -8,6 +8,7 @@
 
 -module (rest_server).
 -behaviour(gen_server).
+-include ("alice.hrl").
 
 %% API
 -export([start_link/1]).
@@ -45,9 +46,26 @@ start_link(Args) ->
 %%--------------------------------------------------------------------
 % TODO: Update port args with config variables
 init([Args]) ->
-  io:format("Starting ~p with ~p~n", [?MODULE, Args]),
+	print_banner(),
   start_mochiweb(Args),
   {ok, #state{}}.
+
+
+print_banner() ->
+		Product = "------- Alice -------",
+		PingStatus = case net_adm:ping(rabint:ping_rabbit()) of
+			pang -> "false";
+			pong -> "true"
+		end,
+    io:format("~s~n~s~n~n",
+              [?SOFTWARE_NAME, ?COPYRIGHT_MESSAGE]),
+    Settings = [{"rabbit node ",         rabint:rabbit_node()},
+                {"connected ", PingStatus}],
+    DescrLen = lists:max([length(K) || {K, _V} <- Settings]),
+    Format = "~-" ++ integer_to_list(DescrLen) ++ "s: ~s~n",
+    lists:foreach(fun ({K, V}) -> io:format(Format, [K, V]) end, Settings),
+		io:format("---------------------------------\n"),
+    io:nl().
 
 %%--------------------------------------------------------------------
 %% Function: %% handle_call(Request, From, State) -> {reply, Reply, State} |
@@ -160,7 +178,7 @@ subst(Template, Values) when is_list(Values) ->
 
 % parse the controller path
 parse_controller_path(CleanPath) ->
-  CPath = case string:tokens(CleanPath, "/") of
+  case string:tokens(CleanPath, "/") of
     [] -> [];
     [_RootPath|Rest] -> Rest
   end.
