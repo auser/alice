@@ -116,19 +116,26 @@ handle("/favicon.ico", Req) -> Req:respond({200, [{"Content-Type", "text/html"}]
 
 handle(Path, Req) ->
   CleanPath = clean_path(Path),
-  ControllerAtom = erlang:list_to_atom(top_level_request(CleanPath)),    
+  CAtom = erlang:list_to_atom(top_level_request(CleanPath)),    
   ControllerPath = parse_controller_path(CleanPath),
-
-  io:format("ControllerPath: ~p~n", [ControllerPath]),
-  Body = case Req:get(method) of
-    'GET' -> ControllerAtom:get(ControllerPath);
-    'POST' -> ControllerAtom:post(ControllerPath, decode_data_from_request(Req));
-    'PUT' -> ControllerAtom:put(ControllerPath, decode_data_from_request(Req));
-    'DELETE' -> ControllerAtom:delete(ControllerPath, decode_data_from_request(Req));
-    Other -> subst("Other ~p on: ~s~n", [users, Other])
-  end,
-  JsonBody = jsonify(Body),
-  Req:ok({"text/json", JsonBody}).
+  
+  case CAtom of
+    home -> 
+      {ok, IndexContents} = file:read_file("web/index.html"),
+      Req:ok({"text/html", IndexContents});
+    assets -> Req:ok(assets:get(ControllerPath));
+    ControllerAtom -> 
+      io:format("ControllerPath: ~p~n", [ControllerPath]),
+      Body = case Req:get(method) of
+        'GET' -> ControllerAtom:get(ControllerPath);
+        'POST' -> ControllerAtom:post(ControllerPath, decode_data_from_request(Req));
+        'PUT' -> ControllerAtom:put(ControllerPath, decode_data_from_request(Req));
+        'DELETE' -> ControllerAtom:delete(ControllerPath, decode_data_from_request(Req));
+        Other -> subst("Other ~p on: ~s~n", [users, Other])
+      end,
+      JsonBody = jsonify(Body),
+      Req:ok({"text/json", JsonBody})
+  end.
 
 jsonify(JsonifiableBody) ->
   [ ?JSON_ENCODE({

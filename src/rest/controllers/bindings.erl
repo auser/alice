@@ -6,12 +6,17 @@ get(["root"]) -> ?MODULE:get(["/"]);
 get([VhostArg]) -> 
   [Back] = get_bindings_for(VhostArg),
   
-  {Exchange, Queue, _AsQueue, _Other} = Back,
-  {resource, _, exchange, _Exch} = Exchange,
+  {Exchange, Queue, AsQueue, _Other} = Back,
+  {resource, _, exchange, Exch} = Exchange,
   {resource, _, queue, RealQueue} = Queue,
   
   % {"exchange", Exch}, {"other", Other}
-  {"status", RealQueue};
+  O = {struct,  [
+                  {"queue", utils:turn_binary(RealQueue)},
+                  {"exchange", utils:turn_binary(Exch)},
+                  {"from_queue", utils:turn_binary(AsQueue)}                  
+                ]},
+  {?MODULE, O};
   
 get(_Path) -> {"error", <<"unhandled">>}.
 

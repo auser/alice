@@ -65,5 +65,23 @@ $(function(){
 			$("#vhosts").append("<b>Error accessing vhosts</b>")
 		}
 	});
+	
+	// Connection status
+	$.ajax({
+	  url: aliceUrl + "/conn/address/port/peer_address/peer_port/state/channels/user/vhost/timeout/frame_max/recv_oct/recv_cnt/send_oct/send_cnt/send_pend",
+	  cache: false,
+	  dataType: "json",
+	  success: function(data){
+			$("#conn_status").append("<ul>")
+			var conn = $(data.conn);
+			traverse("conn", conn, function(key, val) {
+				$("#conn_status").append("<li>"+key+" = "+val+"</li>");
+			});
+			$("#conn_status").append("</ul>")
+	  },
+		error: function(e, xhr){
+			$("#conn_status").append("<b>Error accessing connection</b>")
+		}
+	});
  
 });
