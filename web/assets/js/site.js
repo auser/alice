@@ -73,9 +73,12 @@ $(function(){
 	  dataType: "json",
 	  success: function(data){
 			$("#conn_status").append("<ul>")
-			var conn = $(data.conn);
-			traverse("conn", conn, function(key, val) {
-				$("#conn_status").append("<li>"+key+" = "+val+"</li>");
+			var conn = $(data.conn);			
+			$.each(conn, function(i, obj){
+				$("#conn_status").append("<h4>"+i+"</h4>");
+				traverse("conn", obj, function(key, val) {
+					$("#conn_status").append("<li>"+key+" = "+val+"</li>");
+				});
 			});
 			$("#conn_status").append("</ul>")
 	  },

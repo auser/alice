@@ -13,7 +13,15 @@ get(Args) ->
     [] -> 
       {struct, [{?MODULE, utils:turn_binary("No connections")}]};
     Else ->
-      [extract_connection_info(Info, Args) || Info <- Else]
+      FunCollect = fun(Info) ->
+        Key = case lists:keysearch(address, 1, Info) of
+          {value, {address, Ip}}          -> utils:format_ip(Ip);
+          false                           -> "127.0.01"
+        end,
+        Val = extract_connection_info(Info, Args),        
+        {struct, [{Key, Val}]}
+      end,
+      lists:map(FunCollect, Else)
   end,
   {?MODULE, O}.
 
@@ -30,7 +38,7 @@ get_connections_for(_ArgAtoms) ->
 extract_connection_info(Info, Args) ->
   FunSearch = fun(Meth) ->
     case lists:keysearch(Meth, 1, Info) of
-      false                         -> <<"n/a">>;
+      false                         -> {struct, [{erlang:atom_to_list(Meth), utils:turn_binary("not found")}]};
       {value, {address, Ip}}        -> {struct, [{"ip", utils:turn_binary(utils:format_ip(Ip))}]};
       {value, {peer_address, Ip}}   -> {struct, [{"peer_address", utils:turn_binary(utils:format_ip(Ip))}]};
       {value, {channels, Channels}} -> {struct, [{"channels", utils:turn_binary(Channels)}]};
