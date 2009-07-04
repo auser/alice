@@ -9,5 +9,5 @@ start_link(Args) ->
 
 init(Args) ->
     {ok, {{one_for_one, 2, 10}, [
-        {the_rest_server, {rest_server, start_link, [Args]}, permanent, 2000, worker, [rest_server]}
+        {the_rest_server, {rest_server, start_link, [Args]}, permanent, 2000, worker, [rest_server, alice_log]}
     ]}}.

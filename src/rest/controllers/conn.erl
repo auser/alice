@@ -7,11 +7,30 @@
 get([]) -> ?MODULE:get(["address", "port"]);
 
 get(Args) -> 
-  [Back] = get_connections_for( Args ),
-    
+  Back = get_connections_for( Args ),
+  
+  O = case Back of
+    [] -> 
+      {struct, [{?MODULE, utils:turn_binary("No connections")}]};
+    Else ->
+      [extract_connection_info(Info, Args) || Info <- Else]
+  end,
+  {?MODULE, O}.
+
+post(_Path, _Data) -> {"error", <<"unhandled">>}.
+put(_Path, _Data) -> {"error", <<"unhandled">>}.
+delete(_Path, _Data) -> {"error", <<"unhandled">>}.
+
+% PRIVATE
+
+get_connections_for(_ArgAtoms) ->
+  %VHostArg, ArgAtoms
+  rabint:rpc_call(rabbit_networking, connection_info_all, []).
+
+extract_connection_info(Info, Args) ->
   FunSearch = fun(Meth) ->
-    case lists:keysearch(Meth, 1, Back) of
-      false                         -> <<"unknown">>;
+    case lists:keysearch(Meth, 1, Info) of
+      false                         -> <<"n/a">>;
       {value, {address, Ip}}        -> {struct, [{"ip", utils:turn_binary(utils:format_ip(Ip))}]};
       {value, {peer_address, Ip}}   -> {struct, [{"peer_address", utils:turn_binary(utils:format_ip(Ip))}]};
       {value, {channels, Channels}} -> {struct, [{"channels", utils:turn_binary(Channels)}]};
@@ -29,22 +48,4 @@ get(Args) ->
       {value, {peer_port, Port}}    -> {struct, [{"peer_port", utils:turn_binary(Port)}]}
     end
   end,
-  
-  O = lists:map(FunSearch, [ erlang:list_to_atom(A) || A <- Args]),
-  {?MODULE, O};
-  
-get(_Path) -> {"error", <<"unhandled">>}.
-
-post(_Path, _Data) -> {"error", <<"unhandled">>}.
-put(_Path, _Data) -> {"error", <<"unhandled">>}.
-delete(_Path, _Data) -> {"error", <<"unhandled">>}.
-
-% PRIVATE
-
-get_connections_for(ArgAtoms) ->
-  %VHostArg, ArgAtoms
-  Args = [ erlang:list_to_atom(Item) || Item <- ArgAtoms],
-  case rabint:rpc_call(rabbit_networking, connection_info_all, [Args]) of
-    {error, E} -> {"error", erlang:list_to_binary(E)};
-    Bin -> Bin
-  end.
+  lists:map(FunSearch, [ erlang:list_to_atom(A) || A <- Args]).

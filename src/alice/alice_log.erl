@@ -1,38 +1,42 @@
 %%%-------------------------------------------------------------------
-%%% File    : rest_server.erl
+%%% File    : alice_log.erl
 %%% Author  : Ari Lerner
 %%% Description : 
 %%%
-%%% Created :  Fri Jun 26 17:14:22 PDT 2009
+%%% Created :  Fri Jul  3 17:06:11 PDT 2009
 %%%-------------------------------------------------------------------
 
--module (rest_server).
+-module (alice_log).
 -behaviour(gen_server).
--include ("alice.hrl").
 
 %% API
--export([start_link/1]).
+-export([start_link/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
 
--export ([print_banner/0]).
--record(state, {
+-export([info/1, info/2]).
         
-        }).
+-record(state, {}).
+        
 -define(SERVER, ?MODULE).
--define(JSON_ENCODE(V), mochijson2:encode(V)).
 
 %%====================================================================
 %% API
 %%====================================================================
+info(Fmt) ->
+    gen_server:cast(?SERVER, {info, Fmt}).
+
+info(Fmt, Args) when is_list(Args) ->
+    gen_server:cast(?SERVER, {info, Fmt, Args}).
+    
 %%--------------------------------------------------------------------
 %% Function: start_link() -> {ok,Pid} | ignore | {error,Error}
 %% Description: Starts the server
 %%--------------------------------------------------------------------
-start_link(Args) ->
-  gen_server:start_link({local, ?SERVER}, ?MODULE, [Args], []).
+start_link() ->
+  gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
 %%====================================================================
 %% gen_server callbacks
@@ -45,31 +49,8 @@ start_link(Args) ->
 %%                         {stop, Reason}
 %% Description: Initiates the server
 %%--------------------------------------------------------------------
-% TODO: Update port args with config variables
-init([Args]) ->
-  alice_log:info("Starting..."),
-	print_banner(),
-  start_mochiweb(Args),
-  spawn_link(fun() -> rabint:stay_connected_to_rabbit_node(0) end),
+init([]) ->
   {ok, #state{}}.
-
-
-print_banner() ->
-		PingStatus = case net_adm:ping(rabint:ping_rabbit()) of
-			pang -> 
-        Cookie = erlang:get_cookie(),
-			  io_lib:fwrite("false\n\tYour cookie is set to ~p\n\tMake sure your rabbitmq server's .erlang.cookie file matches", [Cookie]);
-			pong -> "true"
-		end,
-    io:format("~s~n~s~n~n",
-              [?SOFTWARE_NAME, ?COPYRIGHT_MESSAGE]),
-    Settings = [{"rabbit node ",         rabint:rabbit_node()},
-                {"connected ", PingStatus}],
-    DescrLen = lists:max([length(K) || {K, _V} <- Settings]),
-    Format = "~-" ++ integer_to_list(DescrLen) ++ "s: ~s~n",
-    lists:foreach(fun ({K, V}) -> io:format(Format, [K, V]) end, Settings),
-		io:format("---------------------------------\n"),
-    io:nl().
 
 %%--------------------------------------------------------------------
 %% Function: %% handle_call(Request, From, State) -> {reply, Reply, State} |
@@ -90,6 +71,14 @@ handle_call(_Request, _From, State) ->
 %%                                      {stop, Reason, State}
 %% Description: Handling cast messages
 %%--------------------------------------------------------------------
+handle_cast({info, Fmt}, State) ->
+    error_logger:info_msg(Fmt),
+    {noreply, State};
+
+handle_cast({info, Fmt, Args}, State) ->
+    error_logger:info_msg(Fmt, Args),
+    {noreply, State};
+    
 handle_cast(_Msg, State) ->
   {noreply, State}.
 
@@ -122,81 +111,3 @@ code_change(_OldVsn, State, _Extra) ->
 %%--------------------------------------------------------------------
 %%% Internal functions
 %%--------------------------------------------------------------------
-start_mochiweb(Args) ->
-  [Port] = Args,
-  io:format("Starting mochiweb_http with ~p~n", [Port]),
-  mochiweb_http:start([ {port, Port},
-                        {loop, fun dispatch_requests/1}]).
-
-dispatch_requests(Req) ->
-  Path = Req:get(path),
-  Action = clean_path(Path),
-  handle(Action, Req).
-  
-% Handle the requests
-handle("/favicon.ico", Req) -> Req:respond({200, [{"Content-Type", "text/html"}], ""});
-
-handle(Path, Req) ->
-  CleanPath = clean_path(Path),
-  CAtom = erlang:list_to_atom(top_level_request(CleanPath)),    
-  ControllerPath = parse_controller_path(CleanPath),
-  
-  case CAtom of
-    home -> 
-      {ok, IndexContents} = file:read_file("web/index.html"),
-      Req:ok({"text/html", IndexContents});
-    assets -> Req:ok(assets:get(ControllerPath));
-    ControllerAtom -> 
-      io:format("ControllerPath: ~p~n", [ControllerPath]),
-      Body = case Req:get(method) of
-        'GET' -> ControllerAtom:get(ControllerPath);
-        'POST' -> ControllerAtom:post(ControllerPath, decode_data_from_request(Req));
-        'PUT' -> ControllerAtom:put(ControllerPath, decode_data_from_request(Req));
-        'DELETE' -> ControllerAtom:delete(ControllerPath, decode_data_from_request(Req));
-        Other -> subst("Other ~p on: ~s~n", [users, Other])
-      end,
-      JsonBody = jsonify(Body),
-      Req:ok({"text/json", JsonBody})
-  end.
-
-jsonify(JsonifiableBody) ->
-  [ ?JSON_ENCODE({
-        struct, [
-          JsonifiableBody
-        ]
-    })
-  ].
-    
-% Get the data off the request
-decode_data_from_request(Req) ->
-  Data = case Req:recv_body() of
-    <<>> -> 
-      erlang:list_to_binary("{}");
-    Body -> Body
-  end,
-  {struct, Struct} = mochijson2:decode(Data),
-  Struct.
-
-subst(Template, Values) when is_list(Values) ->
-  list_to_binary(lists:flatten(io_lib:fwrite(Template, Values))).
-
-% parse the controller path
-parse_controller_path(CleanPath) ->
-  case string:tokens(CleanPath, "/") of
-    [] -> [];
-    [_RootPath|Rest] -> Rest
-  end.
-
-% Get a clean path
-% strips off the query string
-clean_path(Path) ->
-  case string:str(Path, "?") of
-    0 -> Path;
-    N -> string:substr(Path, 1, string:len(Path) - (N+1))
-  end.
-
-top_level_request(Path) ->
-  case string:tokens(Path, "/") of
-    [CleanPath|_Others] -> CleanPath;
-    [] -> "home"
-  end.

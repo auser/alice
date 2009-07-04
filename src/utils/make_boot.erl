@@ -16,7 +16,6 @@ write_scripts(Args) ->
 
         Rel = "{release, {\"~s\", \"~s\"}, {erts, \"~s\"}, ["
                "{kernel, \"~s\"}, {stdlib, \"~s\"}, {sasl, \"~s\"}, {~s, \"~s\"}]}.",
-        
         Lowername = string:to_lower(Name),
         
         Filename = lists:flatten(Lowername ++ ".rel"),
