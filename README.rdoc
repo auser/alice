@@ -1,6 +1,6 @@
 == Alice
 
-Alice is a REST and web front-end to <a href="http://www.rabbitmq.com/">rabbitmq</a>. 
+Alice is a REST and web front-end to rabbitmq:"http://www.rabbitmq.com/"
 
 == Starting
   To start Alice, type
