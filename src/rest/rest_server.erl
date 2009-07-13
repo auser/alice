@@ -143,11 +143,10 @@ handle(Path, Req) ->
   
   case CAtom of
     home -> 
-      {ok, IndexContents} = file:read_file("web/index.html"),
+      {ok, IndexContents} = file:read_file("web/wonderland/index.html"),
       Req:ok({"text/html", IndexContents});
     assets -> Req:ok(assets:get(ControllerPath));
     ControllerAtom -> 
-      io:format("ControllerPath: ~p~n", [ControllerPath]),
       Body = case Req:get(method) of
         'GET' -> ControllerAtom:get(ControllerPath);
         'POST' -> ControllerAtom:post(ControllerPath, decode_data_from_request(Req));

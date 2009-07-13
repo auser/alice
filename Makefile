@@ -1,15 +1,22 @@
-LIBDIR		= `erl -eval 'io:format("~s~n", [code:lib_dir()])' -s init stop -noshell`
-VERSION		= 0.0.1
-CC  			= erlc
-ERL     	= erl
-EBIN			= ebin
-CFLAGS  	= -I include -pa $(EBIN)
-COMPILE		= $(CC) $(CFLAGS) -o $(EBIN)
-EBIN_DIRS = $(wildcard deps/*/ebin)
+LIBDIR					= `erl -eval 'io:format("~s~n", [code:lib_dir()])' -s init stop -noshell`
+VERSION					= 0.0.1
+CC							= erlc
+ERL							= erl
+EBIN						= ebin
+CFLAGS					= -I include -pa $(EBIN)
+COMPILE					= $(CC) $(CFLAGS) -o $(EBIN)
+EBIN_DIRS				= $(wildcard deps/*/ebin)
+WEB_DIR					= web/
+WONDERLAND_DIR	= $(WEB_DIR)/wonderland
 
 all: mochi ebin compile
 all_boot: all make_boot
 start: all start_all
+rstakeout: wonderland compile
+
+wonderland:
+	[ -d $(WONDERLAND_DIR) ] || (mkdir $(WEB_DIR) && cd $(WEB_DIR) && git clone git@github.com:auser/wonderland.git)
+	cd $(WONDERLAND_DIR) && git pull origin master
 
 mochi:
 	@(cd deps/mochiweb;$(MAKE))

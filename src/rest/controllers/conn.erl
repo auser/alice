@@ -11,7 +11,7 @@ get(Args) ->
   
   O = case Back of
     [] -> 
-      {struct, [{?MODULE, utils:turn_binary("No connections")}]};
+      {struct, [{?MODULE, utils:turn_binary([])}]};
     Else ->
       FunCollect = fun(Info) ->
         Key = case lists:keysearch(address, 1, Info) of

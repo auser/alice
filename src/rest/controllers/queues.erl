@@ -47,6 +47,7 @@ get_info_for(VhostArg, OtherArgs) ->
                                                     Args
                                                   ]) of
     {error, E} -> {"error", erlang:list_to_binary(E)};
+    [] -> {queues, []};
     [Bin] -> Bin
   end.
 
