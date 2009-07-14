@@ -27,7 +27,6 @@ put([Id], _Json) ->
 put(_Path, _Json) -> {"error",<<"unhandled">>}.
 
 delete([Id], _Data) ->
-  io:format("Delete with ~p~n", [Id]),
   case rabint:call({rabbit_access_control, delete_user, [Id]}) of
     ok -> {"users", get_all_users()};
     {Error, _} -> {"error", Error}
