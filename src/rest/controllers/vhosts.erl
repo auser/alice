@@ -10,9 +10,9 @@ get(_Path)          -> {"error", <<"unhandled">>}.
 
 post([], Data) ->
   Name = erlang:binary_to_list(proplists:get_value(<<"name">>, Data)),
-  case rabint:call({rabbit_access_control, add_vhost, [Name]}) of
-    ok -> {?MODULE, get_all_vhosts()};
-    {Error, _} -> {?MODULE, Error}
+  case rabint:call({rabbit_access_control, add_vhost, [Name]}) of    
+    {Error, _} -> {?MODULE, Error};
+    _ -> {?MODULE, get_all_vhosts()}
   end;
   
 post(_Path, _Data) -> {"error", <<"unhandled">>}.

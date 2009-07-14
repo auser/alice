@@ -171,7 +171,7 @@ decode_data_from_request(Req) ->
   Data = case Req:recv_body() of
     <<>> -> 
       erlang:list_to_binary("{}");
-    Body -> Body
+    Bin -> Bin
   end,
   {struct, Struct} = mochijson2:decode(Data),
   Struct.
