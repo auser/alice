@@ -11,6 +11,7 @@ WONDERLAND_DIR	= $(WEB_DIR)/wonderland
 
 all: mochi ebin compile
 all_boot: all make_boot
+wonderland_boot: wonderland all_boot
 start: all start_all
 rstakeout: wonderland compile
 

@@ -143,7 +143,61 @@ handle(Path, Req) ->
   
   case CAtom of
     home -> 
-      {ok, IndexContents} = file:read_file("web/wonderland/index.html"),
+      IndexContents = case file:read_file("web/wonderland/index.html") of
+        {ok, Contents} -> Contents;
+        _ -> "
+          <html><head>
+            <title>Wonderland is not installed</title>
+            <style type='text/css' media='screen'>
+            body { margin: 20px 0 0 0;}
+
+            .container {
+              width: 888px;
+              margin: 0 auto;
+              padding-top: 50px;
+              overflow: hidden;
+            	text-align: center;
+            }
+
+            #header {
+            	text-align: center;
+            	min-height: 120px;
+            	padding: 0;
+            	border-bottom: 3px solid #eee;
+            }
+            
+            #header .container {
+            	height: 88px;
+              width: auto;
+              margin: 0;
+            }            
+
+            #header h1 a {
+              color: #151515;
+            	text-align: left;
+              font-size: 62px;
+              font-family: Palatino, 'Palatino Linotype', Serif;  
+              text-decoration: none;
+            	padding-left: 100px;	
+            }
+
+            #header span {color: #BE3081;}
+            #content {width: 600px;text-align: left;}
+            </style>
+          </head><body>
+          <div id=\"header\">
+            <div class=\"container\">
+              <h1><a href=\"/\">wonder<span>land</span></a></h1>
+            </div>
+          </div>          
+          <div id='content'>
+          <div class=\"container\">
+          <h2>Wonderland is not installed</h2> 
+          To use wonderland, type: <b>make wonderland</b>
+          </div></div>
+          </body></html>
+        "
+      end,
       Req:ok({"text/html", IndexContents});
     assets -> Req:ok(assets:get(ControllerPath));
     ControllerAtom -> 
