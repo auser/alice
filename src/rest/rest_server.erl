@@ -55,7 +55,7 @@ init([Args]) ->
 
 
 print_banner() ->
-		PingStatus = case net_adm:ping(rabint:ping_rabbit()) of
+		PingStatus = case rabint:ping_rabbit() of
 			pang -> 
         Cookie = erlang:get_cookie(),
 			  io_lib:fwrite("false\n\tYour cookie is set to ~p\n\tMake sure your rabbitmq server's .erlang.cookie file matches", [Cookie]);
@@ -168,9 +168,9 @@ jsonify(JsonifiableBody) ->
     
 % Get the data off the request
 decode_data_from_request(Req) ->
-  Data = case Req:recv_body() of
-    <<>> -> 
-      erlang:list_to_binary("{}");
+  RecvBody = Req:recv_body(),
+  Data = case RecvBody of
+    <<>> -> erlang:list_to_binary("{}");
     Bin -> Bin
   end,
   {struct, Struct} = mochijson2:decode(Data),

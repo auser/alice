@@ -8,5 +8,5 @@ echo '
 Commands:
 sudo rabbitmq-server
 /bin/sh start.sh
-rstakeout "make compile" "*/**/*"
+rstakeout "make compile" "src/**/*"
 '

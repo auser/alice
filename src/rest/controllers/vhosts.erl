@@ -6,7 +6,7 @@
 % list_vhosts
 
 get([])      -> {?MODULE, get_all_vhosts()};
-get(_Path)          -> {"error", <<"unhandled">>}.
+get(_Path)          -> {"error", <<"unhandled vhosts">>}.
 
 post([], Data) ->
   Name = erlang:binary_to_list(proplists:get_value(<<"name">>, Data)),
@@ -19,13 +19,13 @@ post(_Path, _Data) -> {"error", <<"unhandled">>}.
 
 put(_Path, _Data) -> {"error", <<"unhandled">>}.
 
-delete(["/", Name], _Data) -> 
+delete([Name], _Data) ->
   case rabint:call({rabbit_access_control, delete_vhost, [Name]}) of
     ok -> {?MODULE, get_all_vhosts()};
     {Error, _} -> {?MODULE, Error}
   end;
 
-delete(_Path, _Data) -> {"error", <<"unhandled">>}.
+delete(_Path, _Data) -> {"error", <<"unhandled delete">>}.
 
 % PRIVATE
 get_all_vhosts() ->
