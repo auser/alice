@@ -10,8 +10,18 @@ call({Mod, Fun, Args})    -> rpc_call(Mod, Fun, lists:map(fun list_to_binary/1, 
 rpc_call(Mod, Fun, Args)  -> rpc:call(rabbit_node(), Mod, Fun, Args, ?RPC_TIMEOUT).
 
 % Get the local rabbit node
-rabbit_node()             -> rabbit_misc:localnode(rabbit).
+rabbit_node()             -> localnode(rabbit).
 ping_rabbit()							-> net_adm:ping(rabbit_node()).
+
+
+% TAKEN RIGHT FROM rabbitmq-server/rabbit_misc
+localnode(Name) ->
+    %% This is horrible, but there doesn't seem to be a way to split a
+    %% nodename into its constituent parts.
+    list_to_atom(lists:append(atom_to_list(Name),
+                              lists:dropwhile(fun (E) -> E =/= $@ end,
+                                              atom_to_list(node())))).
+
 
 % Maintain connection to rabbit
 stay_connected_to_rabbit_node(Attempts) ->
