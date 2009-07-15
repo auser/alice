@@ -4,7 +4,7 @@
 
 get(["root"]) -> ?MODULE:get(["/"]);
 get([VhostArg]) -> 
-  [Back] = get_bindings_for(VhostArg),
+  Back = get_bindings_for(VhostArg),
   
   {Exchange, Queue, AsQueue, _Other} = Back,
   {resource, _, exchange, Exch} = Exchange,
@@ -28,6 +28,6 @@ delete(_Path, _Data) -> {"error", <<"unhandled">>}.
 
 get_bindings_for(VhostArg) ->
   case rabint:call({rabbit_exchange, list_bindings, [ VhostArg ]}) of
-    {error, E} -> {"error", erlang:list_to_binary(E)};
+    {error, _E} -> [];
     Bin -> Bin
   end.
