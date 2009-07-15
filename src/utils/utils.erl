@@ -22,6 +22,10 @@ turn_binary(Arg) when is_tuple(Arg) -> erlang:term_to_binary(Arg);
 turn_binary(Arg) when is_integer(Arg) -> erlang:list_to_binary(erlang:integer_to_list(Arg));
 turn_binary(Arg) -> erlang:list_to_binary(Arg).
 
+turn_to_atom(Arg) when is_atom(Arg) -> Arg;
+turn_to_atom(Arg) when is_integer(Arg) -> erlang:list_to_atom(erlang:integer_to_list(Arg));
+turn_to_atom(Arg) when is_list(Arg) -> erlang:list_to_atom(Arg).
+
 % Gross
 format_ip({A,B,C,D}) ->
   integer_to_list(A) ++ "." ++ integer_to_list(B) ++ "." ++ integer_to_list(C) ++ "." ++ integer_to_list(D).

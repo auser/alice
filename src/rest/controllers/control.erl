@@ -34,10 +34,6 @@ post(["stop"], _Data) ->
   rabint:call({rabbit, stop_and_halt, []}),
   {"status", <<"stopped">>};
 
-post(["stop_app"], _Data) ->
-  rabint:call({rabbit, stop, []}),
-  {"status", <<"stopped">>};
-
 post(["start_app"], _Data) ->
   rabint:call({rabbit, start, []}),
   {"status", <<"started">>};    
@@ -64,4 +60,9 @@ post(["rotate_logs"], Data) ->
 post(_Path, _Data) -> {"error", <<"unhandled">>}.
 
 put(_Path, _Data) -> {"error", <<"unhandled">>}.
+
+delete(["stop_app"], _Data) ->
+  rabint:call({rabbit, stop, []}),
+  {"status", <<"stopped">>};
+
 delete(_Path, _Data) -> {"error", <<"unhandled">>}.

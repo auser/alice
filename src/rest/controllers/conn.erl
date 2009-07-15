@@ -18,7 +18,7 @@ get(Args) ->
           {value, {address, Ip}}          -> utils:format_ip(Ip);
           false                           -> "127.0.01"
         end,
-        Val = extract_connection_info(Info, Args),        
+        Val = extract_connection_info(Info, Args),
         {struct, [{Key, Val}]}
       end,
       lists:map(FunCollect, Else)
