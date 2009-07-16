@@ -38,4 +38,4 @@ ebin:
 	@mkdir ebin
 
 clean:
-	rm -rf ebin/*.beam ebin/erl_crash.dump erl_crash.dump ebin/*.boot ebin/*.rel ebin/*.script
+	rm -rf ebin/*.beam ebin/erl_crash.dump erl_crash.dump ebin/*.boot ebin/*.rel ebin/*.script deps/mochiweb/ebin/*.beam
