@@ -31,7 +31,10 @@ Alice assumes that the top level request path will be the "controller" that the 
   
 == Authors
   Ari Lerner
-  Nate Murray
-  Michael Fairchild
 
 http://alicetheapp.com
+
+== Thanks
+  Nate Murray
+  Michael Fairchild
+  AT&T interactive's CloudTeam

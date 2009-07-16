@@ -15,7 +15,7 @@ get(["vhost", Vhost]) ->
     Bin -> {"permissions", [erlang:tuple_to_list(P) || P <- Bin ]}
   end;
 get(["/", Username]) -> get_user_perms(Username);
-get(Path) -> {"error", <<"unhandled">>}.
+get(_Path) -> {"error", <<"unhandled">>}.
 
 post(["/", Username], Data) ->
   VHost = extract_vhost(Data),
