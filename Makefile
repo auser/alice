@@ -16,7 +16,7 @@ start: all start_all
 rstakeout: wonderland compile
 
 wonderland:
-	[ -d $(WONDERLAND_DIR) ] || (mkdir $(WEB_DIR) && cd $(WEB_DIR) && git clone git@github.com:auser/wonderland.git)
+	[ -d $(WONDERLAND_DIR) ] || (mkdir $(WEB_DIR) && cd $(WEB_DIR) && git clone git://github.com:auser/wonderland.git)
 	cd $(WONDERLAND_DIR) && git pull origin master
 
 mochi:
