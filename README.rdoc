@@ -13,7 +13,7 @@ the alice REST server.
 You'll need to make sure that rabbitmq is running locally by running:
   sudo rabbitmq-server
 
-Finally, if you want to use wonderland (https://github.com/auser/wonderland/tree/master), type:
+Finally, if you want to use wonderland (http://github.com/auser/wonderland/tree/master), type:
   make wonderland
 
 This will grab the latest wonderland source and install it in your web/ directory
