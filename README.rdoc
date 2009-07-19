@@ -3,19 +3,20 @@
 Alice is a REST and web front-end to http://www.rabbitmq.com
 
 == Starting
-  To start Alice, type
-    ./start.sh
-  
-  This will compile the necessary components, if they are not already compiled and then start
-  the alice REST server.
 
-  You'll need to make sure that rabbitmq is running locally by running:
-    sudo rabbitmq-server
-  
-  Finally, if you want to use wonderland (https://github.com/auser/wonderland/tree/master), type:
-    make wonderland
-  
-  This will grab the latest wonderland source and install it in your web/ directory
+To start Alice, type
+  ./start.sh
+
+This will compile the necessary components, if they are not already compiled and then start
+the alice REST server.
+
+You'll need to make sure that rabbitmq is running locally by running:
+  sudo rabbitmq-server
+
+Finally, if you want to use wonderland (https://github.com/auser/wonderland/tree/master), type:
+  make wonderland
+
+This will grab the latest wonderland source and install it in your web/ directory
 
 == Extending
 
