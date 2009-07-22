@@ -8,6 +8,7 @@ COMPILE					= $(CC) $(CFLAGS) -o $(EBIN)
 EBIN_DIRS				= $(wildcard deps/*/ebin)
 WEB_DIR					= web/
 WONDERLAND_DIR	= $(WEB_DIR)/wonderland
+APP							= alice
 
 all: mochi ebin compile
 all_boot: all make_boot
@@ -26,7 +27,8 @@ compile:
 	@$(ERL) -pa $(EBIN_DIRS) -noinput +B -eval 'case make:all() of up_to_date -> halt(0); error -> halt(1) end.'
 
 edoc:
-	@erl -noshell -run edoc_run application '$(APP)' '"."' '[]'
+	@echo Generating $(APP) documentation from srcs
+	@$(ERL) -noinput -eval 'edoc:application($(APP), "./", [{doc, "doc/"}, {files, "src/"}])' -s erlang halt
 	
 make_boot:
 	(cd ebin; erl -pa ebin -noshell -run make_boot write_scripts rest_app)
