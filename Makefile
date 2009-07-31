@@ -10,8 +10,8 @@ WEB_DIR					= web/
 WONDERLAND_DIR	= $(WEB_DIR)/wonderland
 APP							= alice
 
-all: mochi ebin compile
-all_boot: all make_boot
+all: mochi ebin compile boot
+all_boot: all boot
 wonderland_boot: wonderland all_boot
 start: all start_all
 rstakeout: wonderland compile
@@ -30,7 +30,7 @@ edoc:
 	@echo Generating $(APP) documentation from srcs
 	@$(ERL) -noinput -eval 'edoc:application($(APP), "./", [{doc, "doc/"}, {files, "src/"}])' -s erlang halt
 	
-make_boot:
+boot:
 	(cd ebin; erl -pa ebin -noshell -run make_boot write_scripts rest_app)
 
 start_all:
