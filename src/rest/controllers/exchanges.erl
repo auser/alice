@@ -15,8 +15,7 @@ get([VhostArg|[OtherArgs]]) ->
 
   O = lists:map(
     fun(Line) ->
-      ArgsAsAtoms = [erlang:list_to_atom(Arg) || Arg <- OtherArgs],
-      {struct, parse_lines_from(ArgsAsAtoms, Line)}
+      {struct, parse_lines_from(Line)}
     end, Back),
 
   {?MODULE, O};
@@ -38,7 +37,7 @@ get_exchange_for(VhostArg, OtherArgs) ->
     Bin -> Bin
   end.
 
-parse_lines_from(As, From) ->
+parse_lines_from(From) ->
   lists:map(fun(Line) -> get_type_from_line(Line) end, From).
 
 get_type_from_line(Line) ->
