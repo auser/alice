@@ -10,6 +10,7 @@
 % status
 % rotate_logs [Suffix]
 
+get([]) -> ?MODULE:get(["status"]);
 get(["status"]) ->
   case rabint:call({rabbit, status, []}) of
     Bin -> 
@@ -26,7 +27,6 @@ get(["status"]) ->
       {"status", Jsonable}
   end;  
 
-get([]) -> {"control",<<"status">>};
 get(_Path) -> {"error", <<"unhandled">>}.
 
 
@@ -47,8 +47,7 @@ post(["force_reset"], _Data) ->
   {"status", <<"reset">>};
   
 post(["cluster"], Data) ->
-  ClusterNodeSs = erlang:binary_to_list(proplists:get_value(<<"nodes">>, Data)),
-  ClusterNodes = lists:map(fun list_to_atom/1, ClusterNodeSs),
+  ClusterNodes = lists:map(fun binary_to_list/1, proplists:get_value(<<"nodes">>, Data)),
   rabint:call({rabbit_mnesia, cluster, [ClusterNodes]}),
   {"status", <<"cluster">>};
 

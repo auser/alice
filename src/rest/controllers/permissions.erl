@@ -8,23 +8,25 @@
 
 % TODO: Complete
 
+get([]) -> ?MODULE:get(["vhost", "/"]);
+get(["vhost", "root"]) -> ?MODULE:get(["vhost", "/"]);
 get(["vhost", Vhost]) ->
   case rabint:call({rabbit_access_control, list_vhost_permissions, [Vhost]}) of
-    {Error, _} -> {?MODULE, Error};
+    {error, {Atom, _Error}} -> {?MODULE, Atom};
     % Jsonable = [{struct, [{"applications", Apps}, {"nodes", Nodes}, {"running_nodes", RunningNodes}]}],
     Bin -> {"permissions", [erlang:tuple_to_list(P) || P <- Bin ]}
   end;
 get(["/", Username]) -> get_user_perms(Username);
 get(_Path) -> {"error", <<"unhandled">>}.
 
-post(["/", Username], Data) ->
+post([Username], Data) ->
   VHost = extract_vhost(Data),
   CPerm = extract_param("configure", Data),
   WPerm = extract_param("write", Data),
   RPerm = extract_param("read", Data),
   io:format("sending ~p, ~p, ~p, ~p, ~p~n", [Username, VHost, CPerm, WPerm, RPerm]),
   case rabint:call({rabbit_access_control, set_permissions, [Username, VHost, CPerm, WPerm, RPerm]}) of
-    {Error, _} -> {?MODULE, Error};
+    {error, {Atom, _Error}} -> {?MODULE, Atom};
     ok -> get_user_perms(Username)
   end;
   

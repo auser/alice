@@ -230,6 +230,7 @@ jsonify(JsonifiableBody) ->
 decode_data_from_request(Req) ->
   RecvBody = Req:recv_body(),
   Data = case RecvBody of
+    undefined -> erlang:list_to_binary("{}");
     <<>> -> erlang:list_to_binary("{}");
     Bin -> Bin
   end,
