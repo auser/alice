@@ -6,6 +6,13 @@
 % list_vhosts
 
 get([])      -> {?MODULE, get_all_vhosts()};
+get([Id])   ->
+  Vhosts = lists:map(fun(U) -> erlang:binary_to_list(U) end, get_all_vhosts()),
+  case lists:member(Id, Vhosts) of
+    false ->  {ok, 400, [], {Id, <<"not a vhost">>}};
+    true ->   {"vhosts", erlang:list_to_binary(Id)}
+  end;
+  
 get(_Path)          -> {"error", <<"unhandled vhosts">>}.
 
 post([], Data) ->

@@ -208,8 +208,14 @@ handle(Path, Req) ->
         'DELETE' -> ControllerAtom:delete(ControllerPath, decode_data_from_request(Req));
         Other -> subst("Other ~p on: ~s~n", [users, Other])
       end,
-      JsonBody = jsonify(Body),
-      Req:ok({"text/json", JsonBody})
+      case Body of
+        {ok, Code, ExtraHeaders, RetBody} ->
+          JsonBody = jsonify(RetBody),
+          Req:respond({Code, [{"Content-Type", "text/json"} | ExtraHeaders], JsonBody});
+        Else -> 
+          JsonBody = jsonify(Else),
+          Req:ok({"text/json", JsonBody})
+      end
   end.
 
 jsonify(JsonifiableBody) ->

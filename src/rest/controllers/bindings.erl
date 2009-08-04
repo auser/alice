@@ -1,22 +1,27 @@
 -module (bindings).
 -export ([get/1, post/2, put/2, delete/2]).
 
-
+get([]) -> ?MODULE:get(["/"]);
 get(["root"]) -> ?MODULE:get(["/"]);
-get([VhostArg]) -> 
+get([VhostArg]) ->
   Back = get_bindings_for(VhostArg),
   
-  {Exchange, Queue, AsQueue, _Other} = Back,
-  {resource, _, exchange, Exch} = Exchange,
-  {resource, _, queue, RealQueue} = Queue,
-  
-  % {"exchange", Exch}, {"other", Other}
-  O = {struct,  [
-                  {"queue", utils:turn_binary(RealQueue)},
-                  {"exchange", utils:turn_binary(Exch)},
-                  {"from_queue", utils:turn_binary(AsQueue)}                  
-                ]},
-  {?MODULE, O};
+  case Back of
+    [] -> {"bindings", <<"no bindings">>};
+    _Else ->
+      [{Exchange, Queue, AsQueue, _Other}] = Back,
+      {resource, _, exchange, Exch} = Exchange,
+      {resource, _, queue, RealQueue} = Queue,
+
+      % {"exchange", Exch}, {"other", Other}
+      O = {struct,  [
+                      {"queue", utils:turn_binary(RealQueue)},
+                      {"exchange", utils:turn_binary(Exch)},
+                      {"from_queue", utils:turn_binary(AsQueue)}                  
+                    ]},
+
+      {?MODULE, [O]}
+  end;
   
 get(_Path) -> {"error", <<"unhandled">>}.
 

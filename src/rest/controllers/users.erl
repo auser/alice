@@ -7,7 +7,12 @@
 % list_users
 
 get([])         -> {"users", get_all_users()};
-get([Id])    -> {"users", erlang:list_to_binary(Id)};
+get([Id])    -> 
+  Users = lists:map(fun(U) -> erlang:binary_to_list(U) end, get_all_users()),
+  case lists:member(Id, Users) of
+    false ->  {ok, 400, [], {Id, <<"not a user">>}};
+    true ->   {"users", erlang:list_to_binary(Id)}
+  end;
 get(_Path)            -> {"users", ""}.
 
 post([], Json) ->   
