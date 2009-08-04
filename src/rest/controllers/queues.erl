@@ -11,29 +11,10 @@ get(["root" | OtherArgs]) ->
   
 get([VhostArg|[Args]]) ->
   Back = get_info_for( VhostArg, Args ),
-  
-  FunSearch = fun(Meth, Line) ->
-    case lists:keysearch(Meth, 1, Line) of
-      false                                           -> <<"unknown">>;
-      {value, {memory, Mem}}                          -> {struct, [{"memory", utils:turn_binary(Mem)}]};
-      {value, {name, {resource, VHost, queue, Name}}} -> {struct, [{"name", utils:turn_binary(Name)}, {"vhost", VHost}]};
-      {value, {durable, Dr}}                          -> {struct, [{"durable", utils:turn_binary(Dr)}]};
-      {value, {auto_delete, Ad}}                      -> {struct, [{"auto_delete", utils:turn_binary(Ad)}]};
-      {value, {arguments, Agms}}                      -> {struct, [{"arguments", utils:turn_binary(Agms)}]};
-      {value, {messages_ready, Mr}}                   -> {struct, [{"messages_ready", utils:turn_binary(Mr)}]};
-      {value, {messages_unacknowledged, Mu}}          -> {struct, [{"messages_unacknowledged", utils:turn_binary(Mu)}]};
-      {value, {messages_uncommitted, Muc}}            -> {struct, [{"messages_uncommitted", utils:turn_binary(Muc)}]};
-      {value, {acks_uncommitted, Acks}}               -> {struct, [{"acks_uncommitted", utils:turn_binary(Acks)}]};
-      {value, {consumers, Cons}}                      -> {struct, [{"consumers", utils:turn_binary(Cons)}]};
-      {value, {transactions, Trans}}                  -> {struct, [{"transactions", utils:turn_binary(Trans)}]};
-      {value, {messages, M}}                          -> {struct, [{"messages", utils:turn_binary(M)}]}
-    end
-  end,
-  
-  O = lists:map(fun(Line)->
-    [ FunSearch(erlang:list_to_atom(A), Line) || A <- Args ]
-  end,
-  Back),
+  O = lists:map(
+    fun(Line) ->
+      {struct, convert_prop_for_json(Line)}
+    end, Back),
   {?MODULE, O};
   
 get(_Path) -> {"error", <<"unhandled">>}.
@@ -54,3 +35,25 @@ get_info_for(VhostArg, OtherArgs) ->
     Bin -> Bin
   end.
 
+convert_prop_for_json(Prop) ->
+  convert_prop_for_json(Prop, []).
+convert_prop_for_json([], Acc) ->
+  lists:flatten(Acc);
+convert_prop_for_json([Prop|Rest], Acc) ->
+  convert_prop_for_json(Rest, [
+  case Prop of
+    {name, {resource, VHost, queue, Name}}  ->
+      [{"name", utils:turn_binary(Name)},{vhost, utils:turn_binary(VHost)}];
+    {memory, Mem}                           -> {"memory", utils:turn_binary(Mem)};    
+    {durable, Dr}                           -> {"durable", utils:turn_binary(Dr)};
+    {auto_delete, Ad}                       -> {"auto_delete", utils:turn_binary(Ad)};
+    {arguments, Agms}                       -> {"arguments", utils:turn_binary(Agms)};
+    {messages_ready, Mr}                    -> {"messages_ready", utils:turn_binary(Mr)};
+    {messages_unacknowledged, Mu}           -> {"messages_unacknowledged", utils:turn_binary(Mu)};
+    {messages_uncommitted, Muc}             -> {"messages_uncommitted", utils:turn_binary(Muc)};
+    {acks_uncommitted, Acks}                -> {"acks_uncommitted", utils:turn_binary(Acks)};
+    {consumers, Cons}                       -> {"consumers", utils:turn_binary(Cons)};
+    {transactions, Trans}                   -> {"transactions", utils:turn_binary(Trans)};
+    {messages, M}                           -> {"messages", utils:turn_binary(M)}
+  end | Acc])
+  .
