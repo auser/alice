@@ -410,3 +410,10 @@ Wonderland is the webUI to Alice. It is driven by the javascript framework <a hr
 cd alice
 make wonderland
 </code></pre>
+
+## Community
+<a href="http://github.com/auser/alice/issues">Issue tracker</a>
+<a href="http://groups.google.com/group/alice-and-wonderland?lnk=gcimv">Google group</a>
+<a href="irc://irc.freenode.net#poolpartyrb">irc: irc.freenode.net / #poolpartyrb </a>
+
+Or feel free to ping me on email (arilerner dot mac dot com) if you have any questions.
