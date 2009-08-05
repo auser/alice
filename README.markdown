@@ -1,4 +1,4 @@
-## Alice
+== Alice
 
 Official release post: <a href="http://willcodeforfoo.com/2009/07/13/announcing-alice/">http://willcodeforfoo.com/2009/07/13/announcing-alice/</a>
 
@@ -8,7 +8,7 @@ As a queue server, <a href="http://www.rabbitmq.com/">RabbitMQ</a> is super cool
 
 Alice is a RESTful interface to the RabbitMQ server that talks directly through erlang's native interface, <a href="http://www.erlang.org/doc/man/epmd.html">epmd</a>. The purely <a href="http://en.wikipedia.org/wiki/Representational_State_Transfer">RESTful</a> server responds to the same interface as the RabbitMQ's command-line interface and presents a native HTTP interface to the data. <a href="http://alicetheapp.com">Alice</a> is written with <a href="http://code.google.com/p/mochiweb/">Mochiweb</a>.
 
-## Quickstart
+== Quickstart
 
 How to get started.
 
@@ -19,7 +19,7 @@ cd alice
 </code></pre>
 
 <pre><code>
-==== Currently exposed RESTful routes
+== Currently exposed RESTful routes
 {% highlight make %}
   /conn - Current connection information
   /exchanges - Current exchanges information
@@ -35,7 +35,7 @@ These endpoints all are exposed with the four verbs (get, post, put, delete) and
 
 == Usage
 
-==== Users
+== Users
 
 <pre><code>
 # List users
@@ -96,7 +96,7 @@ Notice that when we list the user that doesn't exist, bob from the second exampl
 
 The same basic usage is applied to all the routes listed, as you can see:
 
-====# Connections
+== Connections
 <pre><code>
 # List connections
 curl -i http://localhost:9999/conn
@@ -109,7 +109,7 @@ Content-Length: 287
 {"conn":[{"pid":"...","ip":"127.0.0.1","port":"5672","peer_address":"127.0.0.1" ...}]}
 </code></pre>
 
-====# Exchanges
+== Exchanges
 <pre><code>
 # List the current exchanges
 curl -i http://localhost:9999/exchanges
@@ -122,7 +122,7 @@ Content-Length: 654
 {"exchanges":[{"name":"amq.rabbitmq.log","type":"topic","durable":"true","auto_delete":...}
 </code></pre>
 
-====# Queues
+== Queues
 <pre><code>
 # List the current queues
 curl -i http://localhost:9999/queues   
@@ -135,7 +135,7 @@ Content-Length: 60
 {"queues":[{"memory":"212988","name":"noises","vhost":"/"}]}
 </code></pre>
 
-====# Bindings
+== Bindings
 <pre><code>
 # List the current bindings
 curl -i http://localhost:9999/bindings
@@ -148,7 +148,7 @@ Content-Length: 69
 {"bindings":[{"queue":"noises","exchange":"","from_queue":"noises"}]}
 </code></pre>
 
-====# Permissions
+== Permissions
 <pre><code>
 # List permissions
 curl -i http://localhost:9999/permissions
@@ -182,7 +182,7 @@ Content-Length: 38
 
 </code></pre>
 
-====# Vhosts
+== Vhosts
 <pre><code>
 # List vhosts
 curl -i http://localhost:9999/vhostsHTTP/1.1 200 OK
@@ -322,7 +322,7 @@ Content-Length: 25
 </code></pre>
 
 
-==== Extending
+== Extending
 Alice is written with the intention of being highly extensible and makes it easy to do so. The controllers respond only to the four verbs with pattern-matching on the routes. 
 
 For instance, a very basic controller looks like this:
@@ -401,17 +401,17 @@ Content-Length: 20
 
 It's as easy as pie to extend Alice.
 
-## Wonderland
+== Wonderland
 
 Wonderland is the webUI to Alice. It is driven by the javascript framework <a href="http://code.quirkey.com/sammy">Sammy</a> and Alice in the backend. Because the framework is client-side and accesses the data through <a href="http://en.wikipedia.org/wiki/Ajax_(programming)">ajax</a>, Wonderland can be deployed nearly anywhere.
 
-## Quickstart
+== Quickstart
 <pre><code>
 cd alice
 make wonderland
 </code></pre>
 
-## Community
+== Community
 * <a href="http://github.com/auser/alice/issues">Issue tracker</a>
 * <a href="http://groups.google.com/group/alice-and-wonderland?lnk=gcimv">Google group</a>
 * <a href="irc://irc.freenode.net#poolpartyrb">irc: irc.freenode.net / #poolpartyrb </a>
