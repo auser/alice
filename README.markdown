@@ -18,8 +18,8 @@ cd alice
 ./start.sh
 </code></pre>
 
-
-#### Currently exposed RESTful routes
+<pre><code>
+==== Currently exposed RESTful routes
 {% highlight make %}
   /conn - Current connection information
   /exchanges - Current exchanges information
@@ -33,9 +33,9 @@ cd alice
 
 These endpoints all are exposed with the four verbs (get, post, put, delete) and respond in the <a href="http://www.json.org/">JSON</a> format, (except the root / endpoint which responds with text/html).
 
-## Usage
+== Usage
 
-#### Users
+==== Users
 
 <pre><code>
 # List users
@@ -96,7 +96,7 @@ Notice that when we list the user that doesn't exist, bob from the second exampl
 
 The same basic usage is applied to all the routes listed, as you can see:
 
-##### Connections
+====# Connections
 <pre><code>
 # List connections
 curl -i http://localhost:9999/conn
@@ -109,7 +109,7 @@ Content-Length: 287
 {"conn":[{"pid":"...","ip":"127.0.0.1","port":"5672","peer_address":"127.0.0.1" ...}]}
 </code></pre>
 
-##### Exchanges
+====# Exchanges
 <pre><code>
 # List the current exchanges
 curl -i http://localhost:9999/exchanges
@@ -122,7 +122,7 @@ Content-Length: 654
 {"exchanges":[{"name":"amq.rabbitmq.log","type":"topic","durable":"true","auto_delete":...}
 </code></pre>
 
-##### Queues
+====# Queues
 <pre><code>
 # List the current queues
 curl -i http://localhost:9999/queues   
@@ -135,7 +135,7 @@ Content-Length: 60
 {"queues":[{"memory":"212988","name":"noises","vhost":"/"}]}
 </code></pre>
 
-##### Bindings
+====# Bindings
 <pre><code>
 # List the current bindings
 curl -i http://localhost:9999/bindings
@@ -148,7 +148,7 @@ Content-Length: 69
 {"bindings":[{"queue":"noises","exchange":"","from_queue":"noises"}]}
 </code></pre>
 
-##### Permissions
+====# Permissions
 <pre><code>
 # List permissions
 curl -i http://localhost:9999/permissions
@@ -182,7 +182,7 @@ Content-Length: 38
 
 </code></pre>
 
-##### Vhosts
+====# Vhosts
 <pre><code>
 # List vhosts
 curl -i http://localhost:9999/vhostsHTTP/1.1 200 OK
@@ -322,7 +322,7 @@ Content-Length: 25
 </code></pre>
 
 
-#### Extending
+==== Extending
 Alice is written with the intention of being highly extensible and makes it easy to do so. The controllers respond only to the four verbs with pattern-matching on the routes. 
 
 For instance, a very basic controller looks like this:
