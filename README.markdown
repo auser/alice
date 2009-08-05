@@ -1,5 +1,7 @@
 ## Alice
 
+Official release post: <a href="http://willcodeforfoo.com/2009/07/13/announcing-alice/">http://willcodeforfoo.com/2009/07/13/announcing-alice/</a>
+
 <p><a href="http://alicetheapp.com">http://alicetheapp.com</a>.</p>
 
 As a queue server, <a href="http://www.rabbitmq.com/">RabbitMQ</a> is super cool, but my company is hesitant to use it without a nice front-end or access to statistics about the server. So we set out to develop the latest RabbitMQ REST interface, <a href="http://github.com/auser/alice">Alice</a>.
