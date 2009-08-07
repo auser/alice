@@ -16,8 +16,10 @@ get(["vhost", Vhost]) ->
     % Jsonable = [{struct, [{"applications", Apps}, {"nodes", Nodes}, {"running_nodes", RunningNodes}]}],
     Bin -> {"permissions", [erlang:tuple_to_list(P) || P <- Bin ]}
   end;
-get(["/", Username]) -> get_user_perms(Username);
-get(_Path) -> {"error", <<"unhandled">>}.
+  
+get([Username]) -> 
+  get_user_perms(Username);
+get(Path) -> {"error", erlang:list_to_binary("unhandled: "++Path)}.
 
 post([Username], Data) ->
   VHost = extract_vhost(Data),
@@ -45,7 +47,7 @@ delete(_Path, _Data) -> {"error", <<"unhandled">>}.
 % PRIVATE
 get_user_perms(Username) ->
   case rabint:call({rabbit_access_control, list_user_permissions, [Username]}) of
-    {Error, _} -> {?MODULE, Error};
+    {_Error, _} -> {?MODULE, erlang:list_to_binary("unknown user: "++Username)};
     % Jsonable = [{struct, [{"applications", Apps}, {"nodes", Nodes}, {"running_nodes", RunningNodes}]}],
     Bin -> {"permissions", [erlang:tuple_to_list(P) || P <- Bin ]}
   end.
