@@ -1,5 +1,6 @@
 -module (queues).
 -export ([get/1, post/2, put/2, delete/2]).
+-export ([get_info_for/2]).
 
   % node doesn't work when turned into an atom... TODO: Add this back
   % http://localhost:9999/info/queues/root/memory/messages_ready/messages_unacknowledged/messages_uncommitted
@@ -55,5 +56,4 @@ convert_prop_for_json([Prop|Rest], Acc) ->
     {consumers, Cons}                       -> {"consumers", utils:turn_binary(Cons)};
     {transactions, Trans}                   -> {"transactions", utils:turn_binary(Trans)};
     {messages, M}                           -> {"messages", utils:turn_binary(M)}
-  end | Acc])
-  .
+  end | Acc]).
