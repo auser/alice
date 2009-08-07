@@ -10,7 +10,6 @@ get([VhostArg]) ->
     [] -> {"bindings", <<"no bindings">>};
     Else ->
       O = lists:map(fun(Quere) ->
-        io:format("Back: ~p~n", [Quere]),
         {Exchange, Queue, AsQueue, _Other} = Quere,
         {resource, _, exchange, Exch} = Exchange,
         {resource, _, queue, RealQueue} = Queue,
