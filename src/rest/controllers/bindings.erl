@@ -8,19 +8,22 @@ get([VhostArg]) ->
   
   case Back of
     [] -> {"bindings", <<"no bindings">>};
-    _Else ->
-      [{Exchange, Queue, AsQueue, _Other}] = Back,
-      {resource, _, exchange, Exch} = Exchange,
-      {resource, _, queue, RealQueue} = Queue,
+    Else ->
+      O = lists:map(fun(Quere) ->
+        io:format("Back: ~p~n", [Quere]),
+        {Exchange, Queue, AsQueue, _Other} = Quere,
+        {resource, _, exchange, Exch} = Exchange,
+        {resource, _, queue, RealQueue} = Queue,
 
-      % {"exchange", Exch}, {"other", Other}
-      O = {struct,  [
-                      {"queue", utils:turn_binary(RealQueue)},
-                      {"exchange", utils:turn_binary(Exch)},
-                      {"from_queue", utils:turn_binary(AsQueue)}                  
-                    ]},
+        % {"exchange", Exch}, {"other", Other}
+        {struct,  [
+                        {"queue", utils:turn_binary(RealQueue)},
+                        {"exchange", utils:turn_binary(Exch)},
+                        {"from_queue", utils:turn_binary(AsQueue)}                  
+                      ]}
+        end, Else),
 
-      {?MODULE, [O]}
+      {?MODULE, O}
   end;
   
 get(_Path) -> {"error", <<"unhandled">>}.
