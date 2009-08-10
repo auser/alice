@@ -45,6 +45,46 @@ get([]) ->
     end, VhostList),
   
   {"dashboard", QueueList};
+
+get(["stats"]) -> 
+  {_, VhostListing} = vhosts:get([]),
+
+  VhostList = [ erlang:binary_to_list(V) || V <- VhostListing ],
+  QueueList = lists:map(
+    fun(Vhost) -> 
+      % Fetch the queues for this vhost
+      Queues = case queues:get([Vhost, [name, memory, messages, consumers, messages_unacknowledged]]) of
+        {queues, Q} -> 
+          lists:map(
+            fun(Data) ->
+              {struct, D} = Data,
+              D
+            end, Q);
+        _E -> []
+      end,
+
+      % io:format("RECEIVED: ~p~n", [Queues]),
+      % Now aggregate their data
+      Data = lists:map(
+        fun(Prop) ->
+          % io:format("Q: ~p~n", [Q]),
+          Data = reduce_prop(Prop, convert_prop_for_consumption(lists:flatten(Queues))),
+          {Prop, erlang:list_to_binary(erlang:integer_to_list(Data))}
+        end, [memory, messages, consumers, messages_unacknowledged]),
+
+      % {struct, [{Vhost, 
+      %   {struct,
+      %     [
+            {struct, Data}
+      %     ]
+      %   }}
+      % ]}
+    
+
+    end, VhostList),
+
+  {"stats", QueueList};
+
   
 get(_Path) -> {"error", <<"unhandled">>}.
 
