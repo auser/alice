@@ -6,7 +6,7 @@
           {port, 9999}
         ]},
         {registered, [alice_log, rest_app, rest_server]},
-        {applications, [kernel, stdlib]},
+        {applications, [kernel, stdlib, os_mon]},
         {mod, {rest_app, []}}
 ]}.
 

@@ -44,7 +44,7 @@ get([]) ->
       
     end, VhostList),
   
-  {"dashboard", QueueList};
+  {?MODULE, QueueList};
 
 get(["stats"]) -> 
   {_, VhostListing} = vhosts:get([]),
@@ -124,3 +124,4 @@ reduce_prop(Prop, [Ele|Rest], Acc) ->
     _Else -> 
       reduce_prop(Prop, Rest, Acc)
   end.  
+  
