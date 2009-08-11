@@ -20,7 +20,6 @@ post(_Path, _Data) -> {"error", <<"unhandled">>}.
 put(_Path, _Data) -> {"error", <<"unhandled">>}.
 
 delete([Name], _Data) ->
-  io:format("Got name: ~p~n", [Name]),
   case rabint:call({rabbit_access_control, delete_vhost, [Name]}) of
     ok -> {?MODULE, get_all_vhosts()};
     {Error, _} -> {?MODULE, Error}
