@@ -1,4 +1,5 @@
 -module (rabint).
+-include ("alice.hrl").
 -compile (export_all).
 
 -define(RPC_TIMEOUT, 30000).
@@ -25,14 +26,14 @@ localnode(Name) ->
 stay_connected_to_rabbit_node(Attempts) ->
   case Attempts > ?MAX_ATTEMPTS of
     true -> 
-      alice_log:info("Lost connect with rabbitmq_server. Check that it's up and try again~n");
+      ?ERROR("Lost connect with rabbitmq_server. Check that it's up and try again~n", []);
     false ->
       timer:sleep(?RABBIT_HEARTBEAT_DELAY),
       case ping_rabbit() of
         pong ->
           stay_connected_to_rabbit_node(0);
         pang -> 
-          alice_log:info("Lost connection with rabbitmq_server. Trying to regain connection to ~p~n", [rabbit_node()]),
+          ?ERROR("Lost connection with rabbitmq_server. Trying to regain connection to ~p~n", [rabbit_node()]),
           stay_connected_to_rabbit_node(Attempts+1)
       end
   end.
