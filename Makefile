@@ -31,7 +31,7 @@ edoc:
 	@$(ERL) -noinput -eval 'edoc:application($(APP), "./", [{doc, "doc/"}, {files, "src/"}])' -s erlang halt
 	
 boot:
-	(cd ebin; $(ERL) -pa ebin -noshell -run make_boot write_scripts rest_app)
+	(cd ebin; $(ERL) -pa ebin -noshell -run make_boot write_scripts alice)
 
 start_all:
 	(cd ebin; erl -pa ebin -noshell -sname alice -boot alice)

@@ -1,12 +1,13 @@
 {application, alice, [
         {description, "Alice"},
         {vsn, "0.1"},
-        {modules, [rest_server]},
+        {modules, [alice_app, alice_log, rest_app]},
         {env, [
-          {port, 9999}
+          {port, 9999},
+          {log_path, "./logs/alice.log"}
         ]},
-        {registered, [rest_server]},
+        {registered, [alice_app, alice_log, rest_app, rest_server]},
         {applications, [kernel, stdlib]},
-        {mod, {rest_server, []}}
+        {mod, {alice_app, []}}
 ]}.
 

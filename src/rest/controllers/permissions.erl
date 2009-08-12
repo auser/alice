@@ -27,7 +27,6 @@ post([Username], Data) ->
   CPerm = extract_param("configure", Data),
   WPerm = extract_param("write", Data),
   RPerm = extract_param("read", Data),
-  io:format("sending ~p, ~p, ~p, ~p, ~p~n", [Username, VHost, CPerm, WPerm, RPerm]),
   case rabint:call({rabbit_access_control, set_permissions, [Username, VHost, CPerm, WPerm, RPerm]}) of
     {error, {Atom, _Error}} -> {?MODULE, Atom};
     ok -> get_user_perms(Username)

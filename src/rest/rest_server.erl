@@ -46,10 +46,22 @@ start_link(Args) ->
 %% Description: Initiates the server
 %%--------------------------------------------------------------------
 % TODO: Update port args with config variables
-init([Args]) ->
-  alice_log:info("Starting..."),
+init(_Args) ->
+  ?INFO("Starting...", []),
 	print_banner(),
+	?INFO("Starting mochiweb", []),
+	Args = lists:map(
+      fun (Var) -> 
+        case application:get_env(alice, Var) of
+          {ok, Value} -> Value;
+          _ -> 
+            {ok, V} = config:get(Var),
+            V
+        end
+      end,
+      [port]),
   start_mochiweb(Args),
+  ?INFO("Started mochiweb with: ~p~n", [Args]),
   spawn_link(fun() -> rabint:stay_connected_to_rabbit_node(0) end),
   {ok, #state{}}.
 
@@ -200,7 +212,9 @@ handle(Path, Req) ->
       end,
       Req:ok({"text/html", IndexContents});
     assets -> Req:ok(assets:get(ControllerPath));
+        
     ControllerAtom -> 
+      ?INFO("Using controller: ~p (~p)~n", [ControllerAtom, Req:get(method)]),
       Body = case Req:get(method) of
         'GET' -> ControllerAtom:get(ControllerPath);
         'POST' -> ControllerAtom:post(ControllerPath, decode_data_from_request(Req));
@@ -208,6 +222,7 @@ handle(Path, Req) ->
         'DELETE' -> ControllerAtom:delete(ControllerPath, decode_data_from_request(Req));
         Other -> subst("Other ~p on: ~s~n", [users, Other])
       end,
+      ?INFO("Received ~p~n", [Body]),
       case Body of
         {ok, Code, ExtraHeaders, RetBody} ->
           JsonBody = jsonify(RetBody),
