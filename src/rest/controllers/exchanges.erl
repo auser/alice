@@ -42,7 +42,7 @@ parse_lines_from(From) ->
 
 get_type_from_line(Line) ->
   case Line of
-    {name, {resource,Vhost,exchange,Name}} ->
+    {name, {resource,_Vhost,exchange,Name}} ->
       {"name", utils:turn_binary(Name)};
     {type, TypeOf} ->
       {"type", utils:turn_binary(TypeOf)};
