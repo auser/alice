@@ -3,40 +3,52 @@
 %%% Author  : Ari Lerner
 %%% Description : 
 %%%
-%%% Created :  Fri Jul  3 17:06:11 PDT 2009
+%%% Created :  Mon Mar  2 01:00:02 PST 2009
 %%%-------------------------------------------------------------------
 
 -module (alice_log).
 -behaviour(gen_server).
+-include ("alice.hrl").
 
 %% API
--export([start_link/0]).
+-export([start_link/0, stop/0, append/1, print/0, 
+          error/1,error/2,
+          info/1,info/2
+        ]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
 
--export([info/1, info/2]).
-        
--record(state, {}).
-        
+-record(state, {
+            log = []
+        }).
 -define(SERVER, ?MODULE).
 
 %%====================================================================
 %% API
 %%====================================================================
-info(Fmt) ->
-    gen_server:cast(?SERVER, {info, Fmt}).
-
-info(Fmt, Args) when is_list(Args) ->
-    gen_server:cast(?SERVER, {info, Fmt, Args}).
-    
 %%--------------------------------------------------------------------
 %% Function: start_link() -> {ok,Pid} | ignore | {error,Error}
 %% Description: Starts the server
 %%--------------------------------------------------------------------
 start_link() ->
   gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+
+stop() ->
+  gen_server:call(?MODULE, stop).
+
+error(Msg) -> error(Msg, []).
+error(Msg, Args) -> error_logger:error_msg(lists:flatten(io_lib:format(Msg, Args))).
+
+info(Msg) -> info(Msg, []).
+info(Msg, Args) -> error_logger:info_msg(lists:flatten(io_lib:format(Msg, Args))).
+
+append(Log) ->
+  gen_server:call(?MODULE, {append, Log}).
+
+print() ->
+  gen_server:call(?MODULE, {print}).
 
 %%====================================================================
 %% gen_server callbacks
@@ -50,6 +62,12 @@ start_link() ->
 %% Description: Initiates the server
 %%--------------------------------------------------------------------
 init([]) ->
+  LogPath = case application:get_env(alice, log_path) of
+    { ok, Log } ->  Log;
+    undefined -> "logs/alice.log"
+  end,
+  error_logger:logfile({open, LogPath}),
+  error_logger:tty(?TESTING),
   {ok, #state{}}.
 
 %%--------------------------------------------------------------------
@@ -61,6 +79,13 @@ init([]) ->
 %%                                      {stop, Reason, State}
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
+handle_call({append, Log}, _From, State) ->
+  {reply, ok, #state{log = [Log | State#state.log]}};
+handle_call({print}, _From, State) ->
+  handle_print(State#state.log),
+  {reply, ok, State};
+handle_call(stop, _From, State) ->
+  {stop, normal, ok, State};
 handle_call(_Request, _From, State) ->
   Reply = ok,
   {reply, Reply, State}.
@@ -71,14 +96,6 @@ handle_call(_Request, _From, State) ->
 %%                                      {stop, Reason, State}
 %% Description: Handling cast messages
 %%--------------------------------------------------------------------
-handle_cast({info, Fmt}, State) ->
-    error_logger:info_msg(Fmt),
-    {noreply, State};
-
-handle_cast({info, Fmt, Args}, State) ->
-    error_logger:info_msg(Fmt, Args),
-    {noreply, State};
-    
 handle_cast(_Msg, State) ->
   {noreply, State}.
 
@@ -111,3 +128,8 @@ code_change(_OldVsn, State, _Extra) ->
 %%--------------------------------------------------------------------
 %%% Internal functions
 %%--------------------------------------------------------------------
+
+handle_print([]) -> ok;
+handle_print([H|T]) ->
+  io:format("~p~n", [H]),
+  handle_print(T).

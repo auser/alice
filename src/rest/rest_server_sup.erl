@@ -4,10 +4,7 @@
 -export([start_link/1, init/1]).
 
 start_link(Args) ->
-  io:format("Got ~p in start_link for ~p~n", [Args, ?MODULE]),
     supervisor:start_link({local, ?MODULE}, ?MODULE, Args).
 
 init(Args) ->
-    {ok, {{one_for_one, 2, 10}, [
-        {the_rest_server, {rest_server, start_link, [Args]}, permanent, 2000, worker, [rest_server, alice_log]}
-    ]}}.
+    {ok, {{one_for_one, 2, 10}, [{the_rest_server, {rest_server, start_link, [Args]}, permanent, 2000, worker, [rest_server]}]}}.
