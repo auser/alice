@@ -1,4 +1,5 @@
 -module (permissions).
+-include ("alice.hrl").
 -export ([get/1, post/2, put/2, delete/2]).
 
 % set_permissions   [-p <VHostPath>] <UserName> <Regexp> <Regexp> <Regexp>
@@ -46,7 +47,9 @@ delete(_Path, _Data) -> {"error", <<"unhandled">>}.
 % PRIVATE
 get_user_perms(Username) ->
   case rabint:call({rabbit_access_control, list_user_permissions, [Username]}) of
-    {_Error, _} -> {?MODULE, erlang:list_to_binary("unknown user: "++Username)};
+    {_Error, Reason} -> 
+      ?ERROR("Got error in rabint call for get_user_perms: ~p~n", [Reason]),
+      {?MODULE, erlang:list_to_binary("unknown user: "++Username)};
     % Jsonable = [{struct, [{"applications", Apps}, {"nodes", Nodes}, {"running_nodes", RunningNodes}]}],
     Bin -> {"permissions", [erlang:tuple_to_list(P) || P <- Bin ]}
   end.
