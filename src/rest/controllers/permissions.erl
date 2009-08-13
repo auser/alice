@@ -14,6 +14,9 @@ get(["vhost", "root"]) -> ?MODULE:get(["vhost", "/"]);
 get(["vhost", Vhost]) ->
   case rabint:call({rabbit_access_control, list_vhost_permissions, [Vhost]}) of
     {error, {Atom, _Error}} -> {?MODULE, Atom};
+    {child_error, function_clause} -> 
+      ?ERROR("DEPRECATED SUPPORT: To get rid of this message, upgrade to RabbitMQ 1.6"),
+      list_vhost_users(Vhost);
     % Jsonable = [{struct, [{"applications", Apps}, {"nodes", Nodes}, {"running_nodes", RunningNodes}]}],
     Bin -> {"permissions", [erlang:tuple_to_list(P) || P <- Bin ]}
   end;
@@ -29,6 +32,9 @@ post([Username], Data) ->
   RPerm = extract_param("read", Data),
   case rabint:call({rabbit_access_control, set_permissions, [Username, VHost, CPerm, WPerm, RPerm]}) of
     {error, {Atom, _Error}} -> {?MODULE, Atom};
+    {child_error, function_clause} -> 
+      ?ERROR("DEPRECATED SUPPORT: To get rid of this message, upgrade to RabbitMQ 1.6"),
+      map_user_to_vhost(Username, Vhost);
     ok -> get_user_perms(Username)
   end;
   
@@ -39,6 +45,9 @@ delete(["/", Username], Data) ->
   VHost = extract_vhost(Data),
   case rabint:call({rabbit_access_control, clear_permissions, [Username, VHost]}) of
     {Error, _} -> {?MODULE, Error};
+    {child_error, function_clause} -> 
+      ?ERROR("DEPRECATED SUPPORT: To get rid of this message, upgrade to RabbitMQ 1.6"),
+      unmap_user_from_vhost(Username, Vhost);
     ok -> get_user_perms(Username)
   end;
   
@@ -50,6 +59,9 @@ get_user_perms(Username) ->
     {_Error, Reason} -> 
       ?ERROR("Got error in rabint call for get_user_perms: ~p~n", [Reason]),
       {?MODULE, erlang:list_to_binary("unknown user: "++Username)};
+    {child_error, function_clause} -> 
+      ?ERROR("DEPRECATED SUPPORT: To get rid of this message, upgrade to RabbitMQ 1.6"),
+      list_user_vhosts(Username);
     % Jsonable = [{struct, [{"applications", Apps}, {"nodes", Nodes}, {"running_nodes", RunningNodes}]}],
     Bin -> {"permissions", [erlang:tuple_to_list(P) || P <- Bin ]}
   end.
@@ -66,3 +78,23 @@ extract_vhost(Data) ->
     undefined -> "/";
     Perm -> erlang:binary_to_list(Perm)
   end.
+  
+  
+%%====================================================================
+%% DEPRECATED SUPPORT
+%%====================================================================
+map_user_to_vhost(Username, Vhost) ->
+  rabint:call({rabbit_access_control, map_user_vhost, [Vhost, Username]}),
+  {?MODULE, lists:append(["Mapped ", Vhost, Username])}.
+
+unmap_user_from_vhost(Username, Vhost) ->
+  rabint:call(Node, {rabbit_access_control, unmap_user_vhost, [Vhost, Username]}),
+  {?MODULE, lists:append(["Unmapped ", Username, Vhost])}.
+  
+list_vhost_users(Vhost) ->
+  O = rabint:call({rabbit_access_control, list_vhost_users, [Vhost]}),
+  {?MODULE, O}.
+
+list_user_vhosts(Username) ->
+  O = rabint:call({rabbit_access_control, list_user_vhosts, [Username]}),
+  {?MODULE, O}.
