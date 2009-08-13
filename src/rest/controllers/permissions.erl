@@ -15,7 +15,7 @@ get(["vhost", Vhost]) ->
   case rabint:call({rabbit_access_control, list_vhost_permissions, [Vhost]}) of
     {error, {Atom, _Error}} -> {?MODULE, Atom};
     {child_error, function_clause} -> 
-      ?ERROR("DEPRECATED SUPPORT: To get rid of this message, upgrade to RabbitMQ 1.6"),
+      ?ERROR("DEPRECATED SUPPORT: To get rid of this message, upgrade to RabbitMQ 1.6", []),
       list_vhost_users(Vhost);
     % Jsonable = [{struct, [{"applications", Apps}, {"nodes", Nodes}, {"running_nodes", RunningNodes}]}],
     Bin -> {"permissions", [erlang:tuple_to_list(P) || P <- Bin ]}
@@ -33,8 +33,8 @@ post([Username], Data) ->
   case rabint:call({rabbit_access_control, set_permissions, [Username, VHost, CPerm, WPerm, RPerm]}) of
     {error, {Atom, _Error}} -> {?MODULE, Atom};
     {child_error, function_clause} -> 
-      ?ERROR("DEPRECATED SUPPORT: To get rid of this message, upgrade to RabbitMQ 1.6"),
-      map_user_to_vhost(Username, Vhost);
+      ?ERROR("DEPRECATED SUPPORT: To get rid of this message, upgrade to RabbitMQ 1.6", []),
+      map_user_to_vhost(Username, VHost);
     ok -> get_user_perms(Username)
   end;
   
@@ -43,11 +43,11 @@ put(_Path, _Data) -> {"error", <<"unhandled">>}.
 
 delete(["/", Username], Data) ->
   VHost = extract_vhost(Data),
-  case rabint:call({rabbit_access_control, clear_permissions, [Username, VHost]}) of
-    {Error, _} -> {?MODULE, Error};
+  case rabint:call({rabbit_access_control, clear_permissions, [Username, VHost]}) of    
     {child_error, function_clause} -> 
-      ?ERROR("DEPRECATED SUPPORT: To get rid of this message, upgrade to RabbitMQ 1.6"),
-      unmap_user_from_vhost(Username, Vhost);
+      ?ERROR("DEPRECATED SUPPORT: To get rid of this message, upgrade to RabbitMQ 1.6", []),
+      unmap_user_from_vhost(Username, VHost);
+    {Error, _} -> {?MODULE, Error};
     ok -> get_user_perms(Username)
   end;
   
@@ -55,13 +55,14 @@ delete(_Path, _Data) -> {"error", <<"unhandled">>}.
 
 % PRIVATE
 get_user_perms(Username) ->
-  case rabint:call({rabbit_access_control, list_user_permissions, [Username]}) of
+  case rabint:call({rabbit_access_control, list_user_permissions, [Username]}) of    
+    {child_error, function_clause} -> 
+      ?ERROR("DEPRECATED SUPPORT: To get rid of this message, upgrade to RabbitMQ 1.6", []),
+      list_user_vhosts(Username);
+      
     {_Error, Reason} -> 
       ?ERROR("Got error in rabint call for get_user_perms: ~p~n", [Reason]),
       {?MODULE, erlang:list_to_binary("unknown user: "++Username)};
-    {child_error, function_clause} -> 
-      ?ERROR("DEPRECATED SUPPORT: To get rid of this message, upgrade to RabbitMQ 1.6"),
-      list_user_vhosts(Username);
     % Jsonable = [{struct, [{"applications", Apps}, {"nodes", Nodes}, {"running_nodes", RunningNodes}]}],
     Bin -> {"permissions", [erlang:tuple_to_list(P) || P <- Bin ]}
   end.
@@ -88,7 +89,7 @@ map_user_to_vhost(Username, Vhost) ->
   {?MODULE, lists:append(["Mapped ", Vhost, Username])}.
 
 unmap_user_from_vhost(Username, Vhost) ->
-  rabint:call(Node, {rabbit_access_control, unmap_user_vhost, [Vhost, Username]}),
+  rabint:call({rabbit_access_control, unmap_user_vhost, [Vhost, Username]}),
   {?MODULE, lists:append(["Unmapped ", Username, Vhost])}.
   
 list_vhost_users(Vhost) ->
