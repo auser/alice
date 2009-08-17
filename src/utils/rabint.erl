@@ -14,6 +14,7 @@ rpc_call(Mod, Fun, Args)  -> rpc:call(rabbit_node(), Mod, Fun, Args, ?RPC_TIMEOU
 rabbit_node() ->
   case application:get_env(alice, rabbithost) of
     undefined         -> localnode(rabbit);
+    {ok, undefined}   -> localnode(rabbit);
     {ok, Hostname}    -> rabbit_node(Hostname)
   end.
   

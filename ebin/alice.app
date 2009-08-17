@@ -5,7 +5,7 @@
         {env, [
           {port, 9999},
           {log_path, "./logs/alice.log"},
-          {rabbithost, "localhost"}
+          {rabbithost, undefined}
         ]},
         {registered, [alice_app, alice_log, rest_app, rest_server]},
         {applications, [kernel, stdlib]},
