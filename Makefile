@@ -33,11 +33,14 @@ edoc:
 boot:
 	(cd ebin; $(ERL) -pa ebin -noshell -run make_boot write_scripts alice)
 
-test: compile
+test: test_ebin compile
 	$(ERL) -noshell -pa $(EBIN) -pa test/ebin -s test_suite test -s init stop
 
 ebin:
 	@mkdir ebin
+
+test_ebin:
+	@(mkdir test/ebin)
 
 clean:
 	rm -rf ebin/*.beam ebin/erl_crash.dump erl_crash.dump ebin/*.boot ebin/*.rel ebin/*.script 
