@@ -1,6 +1,6 @@
 -define(SOFTWARE_NAME, "------------- Alice ------------").
 -define(COPYRIGHT_MESSAGE, "Copyright (C) 2009 Ari Lerner, Nate Murray, Michael Fairchild, CloudTeam").
--define (VERSION, "0.0.1").
+-define (VERSION, "0.0.2").
 
 -define (FMT_MSG (Msg, Args), lists:flatten([?MODULE, ?LINE, io_lib:format(Msg, Args)])).
 -define (INFO (Msg, Args),    alice_log:info(Msg, Args)).
