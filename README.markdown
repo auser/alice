@@ -18,9 +18,20 @@ cd alice
 ./start.sh
 </code></pre>
 
+You can pass a rabbithost where your rabbitmq-server sits by passing the options `rabbithost` in the command-line, like so:
+
+<pre><code>
+  ./start.sh -alice rabbithost "other.node.come"
+</code></pre>
+
+Note, you may have to set your cookie when starting Alice with a remote node by the -setcookie flag:
+
+<pre><code>
+  ./start.sh -alice rabbithost "other.node.com" -setcookie "mysecretcookie"
+</code></pre>
+
 <pre><code>
 == Currently exposed RESTful routes
-{% highlight make %}
   /conn - Current connection information
   /exchanges - Current exchanges information
   /queues - Current queues
