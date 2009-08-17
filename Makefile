@@ -37,7 +37,7 @@ test: test_ebin compile
 	$(ERL) -noshell -pa $(EBIN) -pa test/ebin -s test_suite test -s init stop
 
 ebin:
-	@mkdir ebin
+	@(mkdir ebin)
 
 test_ebin:
 	@(mkdir test/ebin)
