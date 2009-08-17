@@ -33,8 +33,8 @@ edoc:
 boot:
 	(cd ebin; $(ERL) -pa ebin -noshell -run make_boot write_scripts alice)
 
-start_all:
-	(cd ebin; erl -pa ebin -noshell -sname alice -boot alice)
+test: compile
+	$(ERL) -noshell -pa $(EBIN) -pa test/ebin -s test_suite test -s init stop
 
 ebin:
 	@mkdir ebin
