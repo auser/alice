@@ -7,7 +7,7 @@ get([VhostArg]) ->
   Back = get_bindings_for(VhostArg),
   
   case Back of
-    [] -> {"bindings", <<"no bindings">>};
+    [] -> {"bindings", []};
     Else ->
       O = lists:map(fun(Quere) ->
         {Exchange, Queue, AsQueue, _Other} = Quere,
