@@ -12,14 +12,17 @@
 get([]) -> ?MODULE:get(["vhost", "/"]);
 get(["vhost", "root"]) -> ?MODULE:get(["vhost", "/"]);
 get(["vhost", Vhost]) ->
-  try rabint:call({rabbit_access_control, list_vhost_permissions, [Vhost]}) of
-    {child_error, function_clause} ->
-      ?ERROR("DEPRECATED SUPPORT: To get rid of this message, upgrade to RabbitMQ 1.6", []),
-      list_vhost_users(Vhost);
-    {error, {Atom, _Error}} -> {?MODULE, Atom};
-    Bin -> {"permissions", [erlang:tuple_to_list(P) || P <- Bin ]}
-  catch
-    _X -> {?MODULE, <<"unknown error">>}
+  case catch rabint:call({rabbit_access_control, list_vhost_permissions, [Vhost]}) of
+    {badrpc, {'EXIT', Error}} ->
+      case Error of
+        {undef, _Arr} ->
+          ?ERROR("DEPRECATED SUPPORT: To get rid of this message, upgrade to RabbitMQ 1.6", []),
+          list_vhost_users(Vhost);
+        E -> 
+          ?ERROR("Got An error: ~p~n", [E])
+      end;
+    Bin -> 
+      {"permissions", create_json_struct_for(Vhost, [erlang:tuple_to_list(P) || P <- Bin ])}
   end;
     
 get([Username]) -> 
@@ -32,46 +35,53 @@ post([Username], Data) ->
   WPerm = extract_param("write", Data),
   RPerm = extract_param("read", Data),
   
-  try rabint:call({rabbit_access_control, set_permissions, [Username, VHost, CPerm, WPerm, RPerm]}) of
-    {child_error, function_clause} ->
-      ?ERROR("DEPRECATED SUPPORT: To get rid of this message, upgrade to RabbitMQ 1.6", []),
-      map_user_to_vhost(Username, VHost);
-    {error, {Atom, _Error}} -> {?MODULE, Atom};
+  case catch rabint:call({rabbit_access_control, set_permissions, [Username, VHost, CPerm, WPerm, RPerm]}) of
+    {badrpc, {'EXIT', Error}} ->
+      case Error of
+        {undef, _Arr} ->
+          ?ERROR("DEPRECATED SUPPORT: To get rid of this message, upgrade to RabbitMQ 1.6", []),
+          map_user_to_vhost(Username, VHost);
+        _E -> throw(Error)
+      end;
     ok -> get_user_perms(Username)
-  catch
-    _X -> {?MODULE, <<"unknown error">>}
   end;
+  
     
 post(_Path, _Data) -> {"error", <<"unhandled">>}.
 put(_Path, _Data) -> {"error", <<"unhandled">>}.
 
-delete(["/", Username], Data) ->
+delete([Username], Data) ->
   VHost = extract_vhost(Data),  
-  try rabint:call({rabbit_access_control, clear_permissions, [Username, VHost]}) of
-    {child_error, function_clause} ->
-      ?ERROR("DEPRECATED SUPPORT: To get rid of this message, upgrade to RabbitMQ 1.6", []),
-      unmap_user_from_vhost(Username, VHost);
-    {error, {Atom, _Error}} -> {?MODULE, Atom};
+  case catch rabint:call({rabbit_access_control, clear_permissions, [Username, VHost]}) of
+    {badrpc, {'EXIT', Error}} ->
+      case Error of
+        {undef, _Arr} ->
+          ?ERROR("DEPRECATED SUPPORT: To get rid of this message, upgrade to RabbitMQ 1.6", []),
+          unmap_user_from_vhost(Username, VHost);
+        _E -> throw(Error)
+      end;
     ok -> get_user_perms(Username)
-  catch
-    _X -> {?MODULE, <<"unknown error">>}
   end;
-  
   
 delete(_Path, _Data) -> {"error", <<"unhandled">>}.
 
 % PRIVATE
 get_user_perms(Username) ->
-  try rabint:call({rabbit_access_control, list_user_permissions, [Username]}) of
-    {child_error, function_clause} ->
-      ?ERROR("DEPRECATED SUPPORT: To get rid of this message, upgrade to RabbitMQ 1.6", []),
-      list_user_vhosts(Username);
-    {_Error, Reason} -> 
-      ?ERROR("Got error in rabint call for get_user_perms: ~p~n", [Reason]),
-      {?MODULE, erlang:list_to_binary("unknown user: "++Username)};
-    Bin -> {"permissions", [erlang:tuple_to_list(P) || P <- Bin ]}
-  catch
-    _X -> {?MODULE, <<"unknown error">>}
+  case catch rabint:call({rabbit_access_control, list_user_permissions, [Username]}) of
+    {badrpc, {'EXIT', Error}} ->
+      case Error of
+        {undef, _Arr} ->
+          ?ERROR("DEPRECATED SUPPORT: To get rid of this message, upgrade to RabbitMQ 1.6", []),
+          list_user_vhosts(Username);
+        _E -> throw(Error)
+      end;
+    Bin ->
+      ResponseList = [erlang:tuple_to_list(P) || P <- Bin ],
+      VhostList = [ hd(List) || List <- ResponseList ],
+      Out = {struct, [
+          {"users", [{struct, [{"name", utils:turn_binary(Username)}, {"vhosts", VhostList}]}]
+        }]},
+      {?MODULE, Out}
   end.
     
 % ConfigurePerm, WritePerm, ReadPerm
@@ -86,23 +96,40 @@ extract_vhost(Data) ->
     undefined -> "/";
     Perm -> erlang:binary_to_list(Perm)
   end.
-  
+
+%%====================================================================
+%% Utils
+%%====================================================================
+create_json_struct_for(Vhost, Users) ->
+  {struct, [{"vhosts", [{struct, [{"name", utils:turn_binary(Vhost)}, {"users", Users}]}]}]}.
   
 %%====================================================================
 %% DEPRECATED SUPPORT
 %%====================================================================
 map_user_to_vhost(Username, Vhost) ->
-  rabint:call({rabbit_access_control, map_user_vhost, [Vhost, Username]}),
-  {?MODULE, lists:append(["Mapped ", Vhost, Username])}.
+  O = rabint:call({rabbit_access_control, map_user_vhost, [Username, Vhost]}),
+  Out = case O of
+    ok -> utils:turn_binary(lists:append(["Mapped ", Username, " to ", Vhost]));
+    {error, {no_such_user, _BinUsername}} -> utils:turn_binary(lists:append(["No such user ", Username]));
+    {error, UnknownError} -> utils:turn_binary(lists:append(["Unknown error: ", UnknownError]))
+  end,
+  {?MODULE, Out}.
 
 unmap_user_from_vhost(Username, Vhost) ->
-  rabint:call({rabbit_access_control, unmap_user_vhost, [Vhost, Username]}),
-  {?MODULE, lists:append(["Unmapped ", Username, Vhost])}.
-  
+  O = rabint:call({rabbit_access_control, unmap_user_vhost, [Username, Vhost]}),
+  Out = case O of
+    ok -> utils:turn_binary(lists:append(["Unmapped ", Username, " from ", Vhost]));
+    Else -> utils:turn_binary(Else)
+  end,
+  {?MODULE, Out}.
+
+% Fake it
 list_vhost_users(Vhost) ->
   O = rabint:call({rabbit_access_control, list_vhost_users, [Vhost]}),
-  {?MODULE, O}.
+  Users = lists:map(fun(User) -> [User, <<".*">>, <<".*">>, <<".*">>] end, O),
+  {?MODULE, create_json_struct_for(Vhost, Users)}.
 
 list_user_vhosts(Username) ->
   O = rabint:call({rabbit_access_control, list_user_vhosts, [Username]}),
-  {?MODULE, O}.
+  Out = {struct, [{"users", [{struct, [{"name", utils:turn_binary(Username)}, {"vhosts", O}]}]}]},
+  {?MODULE, Out}.
