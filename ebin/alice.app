@@ -4,7 +4,8 @@
         {modules, [alice_app, alice_log, rest_app]},
         {env, [
           {port, 9999},
-          {log_path, "./logs/alice.log"}
+          {log_path, "./logs/alice.log"},
+          {rabbithost, "localhost"}
         ]},
         {registered, [alice_app, alice_log, rest_app, rest_server]},
         {applications, [kernel, stdlib]},
