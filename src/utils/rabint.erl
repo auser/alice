@@ -13,13 +13,16 @@ rpc_call(Mod, Fun, Args)  -> rpc:call(rabbit_node(), Mod, Fun, Args, ?RPC_TIMEOU
 % Get the rabbit node from the env
 rabbit_node() ->
   case application:get_env(alice, rabbithost) of
-    undefined   -> localnode(rabbit);
-    Hostname    -> rabbit_node(Hostname)
+    undefined         -> localnode(rabbit);
+    {ok, Hostname}    -> rabbit_node(Hostname)
   end.
   
-rabbit_node(Hostname) ->  erlang:list_to_atom(Hostname).
+rabbit_node(Hostname)   ->  case Hostname of
+  H when is_atom(H) -> H;
+  Else -> list_to_atom(Else)
+end.
 
-ping_rabbit()							-> net_adm:ping(rabbit_node()).
+ping_rabbit()						-> net_adm:ping(rabbit_node()).
 
 
 % TAKEN RIGHT FROM rabbitmq-server/rabbit_misc
