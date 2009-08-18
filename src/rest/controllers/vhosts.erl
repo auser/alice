@@ -1,5 +1,6 @@
 -module (vhosts).
 -export ([get/1, post/2, put/2, delete/2]).
+-export ([get_all_vhosts/0]).
 
 % add_vhost    <VHostPath>
 % delete_vhost <VHostPath>

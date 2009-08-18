@@ -9,24 +9,33 @@
 
 % TODO: Complete
 
-get([]) -> ?MODULE:get(["vhost", "/"]);
+get([]) -> 
+  % ?MODULE:get(["vhost", "/"]);
+  VhostListing = [ erlang:binary_to_list(V) || V <- vhosts:get_all_vhosts()],
+  Vhosts = lists:map(fun(V) ->
+      % [{"name", utils:turn_binary(V)}, {"users", Users}]
+      U = list_vhost_users(V),
+      
+      % Now aggregate their data        
+      Users = lists:map(fun(User) ->
+          UserTuple = create_writable_user_perm_structure(User),
+          {struct, UserTuple }
+        end, U),
+      {struct, [{"name", utils:turn_binary(V)},{"users", Users}]}
+    end, VhostListing),
+  
+  {?MODULE,
+    {struct, [
+      {vhosts, [ Q || Q <- Vhosts ] }
+    ]}
+  };
+  
 get(["vhost", "root"]) -> ?MODULE:get(["vhost", "/"]);
 get(["vhost", Vhost]) ->
-  case catch rabint:call({rabbit_access_control, list_vhost_permissions, [Vhost]}) of
-    {badrpc, {'EXIT', Error}} ->
-      case Error of
-        {undef, _Arr} ->
-          ?ERROR("DEPRECATED SUPPORT: To get rid of this message, upgrade to RabbitMQ 1.6", []),
-          list_vhost_users(Vhost);
-        E -> 
-          ?ERROR("Got An error: ~p~n", [E])
-      end;
-    Bin -> 
-      {"permissions", create_json_struct_for(Vhost, [erlang:tuple_to_list(P) || P <- Bin ])}
-  end;
-    
-get([Username]) -> 
-  get_user_perms(Username);
+  O = get_vhost_perms(Vhost),
+  {?MODULE, create_json_struct_for(Vhost, O)};
+  
+get([Username]) -> {?MODULE, get_user_perms(Username)};
 get(Path) -> {"error", erlang:list_to_binary("unhandled: "++Path)}.
 
 post([Username], Data) ->
@@ -67,7 +76,7 @@ delete(_Path, _Data) -> {"error", <<"unhandled">>}.
 
 % PRIVATE
 get_user_perms(Username) ->
-  case catch rabint:call({rabbit_access_control, list_user_permissions, [Username]}) of
+  VhostListing = case catch rabint:call({rabbit_access_control, list_user_permissions, [Username]}) of
     {badrpc, {'EXIT', Error}} ->
       case Error of
         {undef, _Arr} ->
@@ -77,12 +86,25 @@ get_user_perms(Username) ->
       end;
     Bin ->
       ResponseList = [erlang:tuple_to_list(P) || P <- Bin ],
-      VhostList = [ hd(List) || List <- ResponseList ],
-      Out = {struct, [
-          {"users", [{struct, [{"name", utils:turn_binary(Username)}, {"vhosts", VhostList}]}]
-        }]},
-      {?MODULE, Out}
+      VhostList = [ hd(List) || List <- ResponseList ]
+  end,
+  {struct, [
+    {name, utils:turn_binary(Username) },
+    {vhosts, VhostListing }
+  ]}.
+
+get_vhost_perms(Vhost) ->
+  case catch rabint:call({rabbit_access_control, list_vhost_permissions, [Vhost]}) of
+    {badrpc, {'EXIT', Error}} ->
+      case Error of
+        {undef, _Arr} ->
+          ?ERROR("DEPRECATED SUPPORT: To get rid of this message, upgrade to RabbitMQ 1.6", []),
+          list_vhost_users(Vhost);
+        E -> ?ERROR("Got An error: ~p~n", [E])
+      end;
+    Bin -> [erlang:tuple_to_list(P) || P <- Bin ]
   end.
+  
     
 % ConfigurePerm, WritePerm, ReadPerm
 extract_param(Name, Data) ->
@@ -100,6 +122,15 @@ extract_vhost(Data) ->
 %%====================================================================
 %% Utils
 %%====================================================================
+create_writable_user_perm_structure(User) ->
+  [Name|Rest] = User,
+  [Configure|Rest2] = Rest,
+  [Write|ReadArr] = Rest2,
+  [Read] = ReadArr,
+  
+  [{"name", Name}, {"configure", Configure}, {"write", Write}, {"read", Read}].
+  
+
 create_json_struct_for(Vhost, Users) ->
   {struct, [{"vhosts", [{struct, [{"name", utils:turn_binary(Vhost)}, {"users", Users}]}]}]}.
   
@@ -127,9 +158,8 @@ unmap_user_from_vhost(Username, Vhost) ->
 list_vhost_users(Vhost) ->
   O = rabint:call({rabbit_access_control, list_vhost_users, [Vhost]}),
   Users = lists:map(fun(User) -> [User, <<".*">>, <<".*">>, <<".*">>] end, O),
-  {?MODULE, create_json_struct_for(Vhost, Users)}.
+  Users.
 
 list_user_vhosts(Username) ->
-  O = rabint:call({rabbit_access_control, list_user_vhosts, [Username]}),
-  Out = {struct, [{"users", [{struct, [{"name", utils:turn_binary(Username)}, {"vhosts", O}]}]}]},
-  {?MODULE, Out}.
+  rabint:call({rabbit_access_control, list_user_vhosts, [Username]}).
+  
