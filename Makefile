@@ -10,7 +10,7 @@ WEB_DIR					= web/
 WONDERLAND_DIR	= $(WEB_DIR)/wonderland
 APP							= alice
 
-all: mochi ebin test_ebin compile
+all: mochi ebin compile
 all_boot: all boot
 wonderland_boot: wonderland all_boot
 start: all start_all
