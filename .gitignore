@@ -6,7 +6,6 @@ pkg
 erl_crash.dump
 logs
 userapp.mnesia
-test/include
 ebin/*.boot
 ebin/*.rel
 ebin/*.script
