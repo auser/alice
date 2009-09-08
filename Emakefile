@@ -5,9 +5,9 @@
 ]}.
 
 % Tests
-% { [ 'test/src/*'
-%   ], [
-%   {i, "include"},
-%   {outdir, "test/ebin"},
-%   debug_info
-% ]}.   
+{ [ 'test/src/*'
+  ], [
+  {i, "include"},
+  {outdir, "test/ebin"},
+  debug_info
+]}.   
