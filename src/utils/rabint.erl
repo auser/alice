@@ -13,11 +13,17 @@ rpc_call(Mod, Fun, Args)  -> rpc:call(rabbit_node(), Mod, Fun, Args, ?RPC_TIMEOU
 % Get the rabbit node from the env
 rabbit_node() ->
   case application:get_env(alice, rabbithost) of
-    undefined         -> localnode(rabbit);
-    {ok, undefined}   -> localnode(rabbit);
+    undefined         -> get_rabbit_node_from_environment();
+    {ok, undefined}   -> get_rabbit_node_from_environment();
     {ok, Hostname}    -> rabbit_node(Hostname)
   end.
-  
+
+get_rabbit_node_from_environment() ->
+  case os:getenv("RABBIT_HOST") of 
+      false -> localnode(rabbit);
+      Server -> Server
+  end.
+
 rabbit_node(Hostname)   ->  case Hostname of
   H when is_atom(H) -> H;
   Else -> list_to_atom(Else)
@@ -37,6 +43,7 @@ localnode(Name) ->
 stay_connected_to_rabbit_node(Attempts) ->
   case Attempts > ?MAX_ATTEMPTS of
     true -> 
+      alice_app:stop([]),
       ?ERROR("Lost connect with rabbitmq_server. Check that it's up and try again~n", []);
     false ->
       timer:sleep(?RABBIT_HEARTBEAT_DELAY),

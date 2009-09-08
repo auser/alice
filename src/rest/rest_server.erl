@@ -122,6 +122,7 @@ handle_info(_Info, State) ->
 %% The return value is ignored.
 %%--------------------------------------------------------------------
 terminate(_Reason, _State) ->
+  mochiweb_http:stop(),
   ok.
 
 %%--------------------------------------------------------------------

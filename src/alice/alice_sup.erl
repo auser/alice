@@ -2,7 +2,7 @@
 -include ("alice.hrl").
 -behaviour(supervisor).
 
--export([start/2]).
+-export([start/2, stop/1]).
 -export([init/1]).
 
 start(Type, Args) ->  
@@ -18,3 +18,10 @@ init([_Type, Args]) ->
     LogServerSup, 
     RestServerSup
   ]}}.
+  
+stop(Args) ->
+  lists:map(fun(Term) -> Term:stop(Args) end, [
+                                            alice_log,
+                                            rest_server_sup
+                                          ]),
+  ok.

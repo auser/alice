@@ -10,4 +10,5 @@ start(Type, Args) ->
     % ),
     alice_sup:start(Type, Args).
 
-stop(_State) -> ok.
+stop(State) -> 
+  alice_sup:stop(State).
