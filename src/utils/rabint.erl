@@ -29,7 +29,9 @@ rabbit_node(Hostname)   ->  case Hostname of
   Else -> list_to_atom(Else)
 end.
 
-ping_rabbit()						-> net_adm:ping(rabbit_node()).
+ping_rabbit()						-> 
+  ?INFO("Pinging: ~p~n", [rabbit_node()]),
+  net_adm:ping(rabbit_node()).
 
 
 % TAKEN RIGHT FROM rabbitmq-server/rabbit_misc
