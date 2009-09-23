@@ -37,7 +37,7 @@ if [ ! -z ${port} ]; then
   port_directive="port ${port}"
 fi
 if [ ! -z ${log} ]; then
-  log_directive="log_path ${log}/alice.${port}.log";
+  log_directive="log_path '${log}/alice.${port}.log'";
 fi
 if [ ! -z ${detached} ]; then
   daemon_directive="-detached"
