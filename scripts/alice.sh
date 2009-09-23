@@ -45,7 +45,7 @@ if [ ! -z ${detached} ]; then
   daemon_directive="-detached"
 fi
 if [ ! -z ${rabbithost} ]; then
-  rabbithost_directive="rabbithost ${rabbithost}"
+  rabbithost_directive="rabbithost '${rabbithost}'"
 fi
 
 echo "Starting alice"
