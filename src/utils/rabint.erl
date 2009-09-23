@@ -3,7 +3,7 @@
 -compile (export_all).
 
 -define(RPC_TIMEOUT, 30000).
--define (RABBIT_HEARTBEAT_DELAY, 1000).
+-define (RABBIT_HEARTBEAT_DELAY, 5000).
 -define (MAX_ATTEMPTS, 10).
 
 % rabint:call({rabbit_access_control, list_users, []})
@@ -29,8 +29,7 @@ rabbit_node(Hostname)   ->  case Hostname of
   Else -> list_to_atom(Else)
 end.
 
-ping_rabbit()						-> 
-  ?INFO("Pinging: ~p~n", [rabbit_node()]),
+ping_rabbit()          -> 
   net_adm:ping(rabbit_node()).
 
 
