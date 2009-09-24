@@ -65,4 +65,4 @@ if [ ! -z ${alice_directory} ]; then
   cd ${alice_directory}
 fi
 
-erl -pa $PWD/ebin -pa $PWD/deps/*/ebin ${name_directive} ${cookie_directive} -boot alice -alice ${port_directive} ${log_directive} ${daemon_directive} ${rabbithost_directive}
+erl -pa $PWD/ebin -pa $PWD/deps/*/ebin ${name_directive} ${cookie_directive} -boot alice -alice ${port_directive} ${log_directive} ${rabbithost_directive} ${daemon_directive}
