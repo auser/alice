@@ -2,7 +2,7 @@
 
 alice_dir=`dirname $0`
 
-while getopts "n:p:l:s:r:a:hd" o ; do
+while getopts "n:p:l:s:r:a:c:hd" o ; do
   case $o in
     n) name=$OPTARG;;
     s) sname=$OPTARG;;
@@ -10,10 +10,12 @@ while getopts "n:p:l:s:r:a:hd" o ; do
     l) log=$OPTARG;;
     r) rabbithost=$OPTARG;;
     d) detached="true";;
+    c) cookie=$OPTARG;;
     a) alice_directory=$OPTARG;;
     h) echo "Usage:  start [options]
 Options:
 -n          name
+-c          cookie
 -s          sname
 -a          Alice directory
 -p          Port
@@ -47,6 +49,9 @@ fi
 if [ ! -z ${rabbithost} ]; then
   rabbithost_directive="rabbithost '${rabbithost}'"
 fi
+if [ ! -z ${cookie} ]; then
+  cookie_directive="-setcookie ${cookie}"
+fi
 
 echo "Starting alice"
 echo ""
@@ -54,9 +59,10 @@ echo " node named: ${name_directive}"
 echo " port: ${port_directive}"
 echo " log file: ${log_directive}"
 echo " daemon: ${daemon_directive}"
+echo " cookie: ${cookie_directive}"
 
 if [ ! -z ${alice_directory} ]; then
   cd ${alice_directory}
 fi
 
-erl -pa $PWD/ebin -pa $PWD/deps/*/ebin ${name_directive} -boot alice -alice ${port_directive} ${log_directive} ${daemon_directive} ${rabbithost_directive}
+erl -pa $PWD/ebin -pa $PWD/deps/*/ebin ${name_directive} ${cookie_directive} -boot alice -alice ${port_directive} ${log_directive} ${daemon_directive} ${rabbithost_directive}
