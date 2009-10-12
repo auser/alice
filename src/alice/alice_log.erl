@@ -62,10 +62,23 @@ print() ->
 %% Description: Initiates the server
 %%--------------------------------------------------------------------
 init([]) ->
-  LogPath = case application:get_env(alice, log_path) of
+  LogPath1 = case application:get_env(alice, log_path) of
     { ok, Log } ->  Log;
     undefined -> "logs/alice.log"
   end,
+  Port = case application:get_env(alice, port) of
+    { ok, P } ->  P;
+    undefined -> 9999
+  end,
+  Dirname = filename:dirname(LogPath1),
+  FilenameWithoutExt = filename:rootname(filename:basename(LogPath1)),
+  Extension = filename:extension(LogPath1),
+  MyHost = lists:dropwhile(fun (E) -> E =/= $@ end, atom_to_list(node())),
+  Realfilename = lists:flatten(lists:append([FilenameWithoutExt, MyHost, ".", erlang:integer_to_list(Port), Extension])),
+  
+  LogPath = filename:join([Dirname, Realfilename]),
+  ?INFO("Logging to path: ~p", [LogPath]),
+  
   error_logger:logfile({open, LogPath}),
   error_logger:tty(?TESTING),
   {ok, #state{}}.
