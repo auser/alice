@@ -141,7 +141,7 @@ start_mochiweb(Args) ->
                         {loop, fun dispatch_requests/1}]).
 
 dispatch_requests(Req) ->
-  Path = Req:get(path),
+  Path = Req:get(raw_path),
   Action = clean_path(Path),
   handle(Action, Req).
   
@@ -149,9 +149,9 @@ dispatch_requests(Req) ->
 handle("/favicon.ico", Req) -> Req:respond({200, [{"Content-Type", "text/html"}], ""});
 
 handle(Path, Req) ->
-  CleanPath = clean_path(Path),
-  CAtom = erlang:list_to_atom(top_level_request(CleanPath)),    
-  ControllerPath = parse_controller_path(CleanPath),
+  CAtom = erlang:list_to_atom(top_level_request(Path)),
+  QuotedControllerPath = parse_controller_path(Path),
+  ControllerPath = [mochiweb_util:unquote(Element) || Element <- QuotedControllerPath],
   
   case CAtom of
     home -> 
@@ -265,10 +265,8 @@ parse_controller_path(CleanPath) ->
 % Get a clean path
 % strips off the query string
 clean_path(Path) ->
-  case string:str(Path, "?") of
-    0 -> Path;
-    N -> string:substr(Path, 1, string:len(Path) - (N+1))
-  end.
+  {CleanPath, _, _} = mochiweb_util:urlsplit_path(Path),
+  CleanPath.
 
 top_level_request(Path) ->
   case string:tokens(Path, "/") of
