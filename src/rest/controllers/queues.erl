@@ -8,15 +8,10 @@
 get([]) -> ?MODULE:get(["root", "name", "memory"]);
 
 get(["root" | OtherArgs]) ->
-  ?MODULE:get(["/", OtherArgs]);
+  get_impl(["/", OtherArgs]);
   
-get([VhostArg|[Args]]) ->
-  Back = get_info_for( VhostArg, Args ),
-  O = lists:map(
-    fun(Line) ->
-      {struct, convert_prop_for_json(Line)}
-    end, Back),
-  {?MODULE, O};
+get([VhostArg | OtherArgs]) ->
+  get_impl([VhostArg, OtherArgs]);
   
 get(_Path) -> {"error", <<"unhandled">>}.
 
@@ -25,10 +20,19 @@ put(_Path, _Data) -> {"error", <<"unhandled">>}.
 delete(_Path, _Data) -> {"error", <<"unhandled">>}.
 
 % PRIVATE
+
+get_impl([VhostArg|[Args]]) ->
+  Back = get_info_for( VhostArg, Args ),
+  O = lists:map(
+    fun(Line) ->
+      {struct, convert_prop_for_json(Line)}
+    end, Back),
+  {?MODULE, O}.
+
 get_info_for(VhostArg, OtherArgs) ->
   %VHostArg, ArgAtoms
   Args = [ utils:turn_to_atom(Item) || Item <- OtherArgs],
-  case rabint:rpc_call(rabbit_amqqueue, info_all, [ erlang:list_to_binary(VhostArg), 
+  case rabint:rpc_call(rabbit_amqqueue, info_all, [ erlang:list_to_binary(VhostArg),
                                                     Args
                                                   ]) of
     {error, E} -> {"error", erlang:list_to_binary(E)};
