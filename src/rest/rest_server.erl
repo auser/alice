@@ -150,12 +150,12 @@ dispatch_requests(Req) ->
 handle("/favicon.ico", Req) -> Req:respond({200, [{"Content-Type", "text/html"}], ""});
 
 handle(Path, Req) ->
-  CleanPath = clean_path(Path),
-  CAtom = erlang:list_to_atom(top_level_request(CleanPath)),    
-  ControllerPath = parse_controller_path(CleanPath),
+  BaseController = top_level_request(clean_path(Path)),
+  CAtom = list_to_atom(BaseController),
+  ControllerPath = parse_controller_path(clean_path(Path)),
   
   case CAtom of
-    home -> 
+    home ->
       IndexContents = case file:read_file("web/wonderland/index.html") of
         {ok, Contents} -> Contents;
         _ -> "
@@ -212,27 +212,28 @@ handle(Path, Req) ->
         "
       end,
       Req:ok({"text/html", IndexContents});
-    assets -> Req:ok(assets:get(ControllerPath));
-        
+		assets -> Req:ok(assets:get(ControllerPath));
     ControllerAtom -> 
-      ?INFO("Using controller: ~p (~p)~n", [ControllerAtom, Req:get(method)]),
-      Body = case Req:get(method) of
-        'GET' -> ControllerAtom:get(ControllerPath);
-        'POST' -> ControllerAtom:post(ControllerPath, decode_data_from_request(Req));
-        'PUT' -> ControllerAtom:put(ControllerPath, decode_data_from_request(Req));
-        'DELETE' -> ControllerAtom:delete(ControllerPath, decode_data_from_request(Req));
-        Other -> subst("Other ~p on: ~s~n", [users, Other])
-      end,
-      ?INFO("Received ~p~n", [Body]),
-      case Body of
-        {ok, Code, ExtraHeaders, RetBody} ->
-          JsonBody = jsonify(RetBody),
-          Req:respond({Code, [{"Content-Type", "text/json"} | ExtraHeaders], JsonBody});
-        Else -> 
-          JsonBody = jsonify(Else),
-          Req:ok({"text/json", JsonBody})
-      end
+    Meth = clean_method(Req:get(method)),
+    case Meth of
+      get -> run_controller(Req, ControllerAtom, Meth, [ControllerPath]);
+      _ -> run_controller(Req, ControllerAtom, Meth, [ControllerPath, decode_data_from_request(Req)])
+    end
   end.
+
+
+% Call the controller action here
+run_controller(Req, ControllerAtom, Meth, Args) ->
+  case (catch erlang:apply(ControllerAtom, Meth, Args)) of
+    {'EXIT', {undef, _}} = E ->
+      ?INFO("(~p:~p) Error in rest server: ~p~n", [?MODULE, ?LINE,E]),
+      Req:ok({"text/html", "Unimplemented controller. There is nothing to see here, go back from where you came"});
+    {'EXIT', E} -> 
+      ?INFO("(~p:~p) Error in rest server: ~p~n", [?MODULE, ?LINE, E]),
+      Req:not_found();
+    Body -> Req:ok({"text/json", jsonify(Body)})
+  end.
+
 
 jsonify(JsonifiableBody) ->
   [ ?JSON_ENCODE({
@@ -253,8 +254,14 @@ decode_data_from_request(Req) ->
   {struct, Struct} = mochijson2:decode(Data),
   Struct.
 
-subst(Template, Values) when is_list(Values) ->
-  list_to_binary(lists:flatten(io_lib:fwrite(Template, Values))).
+% Find the method used as a request. 
+% This turns 'GET' into get
+clean_method(M) ->
+  case M of
+    % This is a hack... FOR NOW
+    'OPTIONS' -> get;
+    _ -> erlang:list_to_atom(string:to_lower(erlang:atom_to_list(M)))
+  end.
 
 % parse the controller path
 parse_controller_path(CleanPath) ->
@@ -271,6 +278,7 @@ clean_path(Path) ->
     N -> string:substr(Path, 1, string:len(Path) - (N+1))
   end.
 
+% Query about the top level request path is
 top_level_request(Path) ->
   case string:tokens(Path, "/") of
     [CleanPath|_Others] -> CleanPath;
