@@ -24,7 +24,12 @@ turn_binary(Arg) -> erlang:list_to_binary(Arg).
 
 turn_to_atom(Arg) when is_atom(Arg) -> Arg;
 turn_to_atom(Arg) when is_integer(Arg) -> erlang:list_to_atom(erlang:integer_to_list(Arg));
-turn_to_atom(Arg) when is_list(Arg) -> erlang:list_to_atom(Arg).
+turn_to_atom(List) when is_list(List) -> 
+	case io_lib:char_list(List) of
+	  true -> erlang:list_to_atom(List);
+	  false -> lists:map(fun(Ele) -> turn_to_atom(Ele) end, List)
+	end;
+turn_to_atom(Arg) -> Arg.
 
 % Gross
 format_ip({A,B,C,D}) ->
