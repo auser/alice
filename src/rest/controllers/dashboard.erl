@@ -12,7 +12,7 @@ get([]) ->
   QueueList = lists:map(
     fun(Vhost) -> 
       % Fetch the queues for this vhost
-      Queues = case queues:get([Vhost, [name, memory, messages, consumers, messages_unacknowledged]]) of
+      Queues = case queues:get([Vhost, "name", "memory", "messages", "consumers", "messages_unacknowledged"]) of
         {queues, Q} -> 
           lists:map(
             fun(Data) ->
