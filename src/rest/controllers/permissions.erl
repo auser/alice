@@ -86,7 +86,7 @@ get_user_perms(Username) ->
       end;
     Bin ->
       ResponseList = [erlang:tuple_to_list(P) || P <- Bin ],
-      VhostList = [ hd(List) || List <- ResponseList ]
+      _VhostList = [ hd(List) || List <- ResponseList ]
   end,
   {struct, [
     {name, utils:turn_binary(Username) },

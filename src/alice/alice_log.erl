@@ -35,7 +35,7 @@
 start_link() ->
   gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
-stop(Args) -> stop().
+stop(_Args) -> stop().
 stop() -> gen_server:call(?MODULE, stop).
 
 error(Msg) -> error(Msg, []).
