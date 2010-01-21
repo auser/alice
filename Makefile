@@ -5,7 +5,7 @@ ERL							= erl
 EBIN						= ebin
 CFLAGS					= -I include -pa $(EBIN)
 COMPILE					= $(CC) $(CFLAGS) -o $(EBIN)
-EBIN_DIRS				= $(wildcard deps/*/ebin)
+EBIN_DIRS				= $(wildcard deps/*/ebin) -pa $(EBIN)
 WEB_DIR					= web/
 WONDERLAND_DIR	= $(WEB_DIR)/wonderland
 APP							= alice
@@ -33,7 +33,7 @@ edoc:
 	@$(ERL) -noinput -eval 'edoc:application($(APP), "./", [{doc, "doc/"}, {files, "src/"}])' -s erlang halt
 	
 boot:
-	(cd ebin; $(ERL) -pa ebin -noshell -run make_boot write_scripts alice)
+	(cd ebin; $(ERL) -pa $(EBIN_DIRS) -noshell -run make_boot write_scripts alice)
 
 test: $(TEST_EBIN_DIR) compile
 	$(ERL) 	-noshell -pa $(EBIN) \
