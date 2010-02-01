@@ -157,7 +157,7 @@ unmap_user_from_vhost(Username, Vhost) ->
 % Fake it
 list_vhost_users(Vhost) ->
   O = rabint:call({rabbit_access_control, list_vhost_permissions, [Vhost]}),
-  Users = lists:map(fun(User) -> [User, <<".*">>, <<".*">>, <<".*">>] end, O),
+  Users = lists:map(fun(User) -> tuple_to_list(User) end, O),
   Users.
 
 list_user_vhosts(Username) ->
