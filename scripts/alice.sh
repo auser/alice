@@ -72,4 +72,5 @@ erl ${daemon_directive} -pa $PWD/ebin \
 												-boot alice \
 												-alice ${port_directive} \
 												${log_directive} \
-												${rabbithost_directive}
+												${rabbithost_directive} \
+												${daemon_directive}

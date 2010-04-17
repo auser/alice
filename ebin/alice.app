@@ -1,7 +1,7 @@
 {application, alice, [
         {description, "Alice"},
         {vsn, "0.1"},
-        {modules, []},
+        {modules, [alice_app, alice_log, rest_app]},
         {env, [
           {port, 9999},
           {log_path, "./logs/alice.log"},
