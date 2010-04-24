@@ -13,15 +13,7 @@ get([]) ->
   % ?MODULE:get(["vhost", "/"]);
   VhostListing = [ erlang:binary_to_list(V) || V <- vhosts:get_all_vhosts()],
   Vhosts = lists:map(fun(V) ->
-      % [{"name", utils:turn_binary(V)}, {"users", Users}]
-      U = list_vhost_users(V),
-      
-      % Now aggregate their data        
-      Users = lists:map(fun(User) ->
-          UserTuple = create_writable_user_perm_structure(User),
-          {struct, UserTuple }
-        end, U),
-      {struct, [{"name", utils:turn_binary(V)},{"users", Users}]}
+     get_vhost_perms(V)
     end, VhostListing),
   
   {?MODULE,
@@ -32,9 +24,8 @@ get([]) ->
   
 get(["vhost", "root"]) -> ?MODULE:get(["vhost", "/"]);
 get(["vhost", Vhost]) ->
-  O = get_vhost_perms(Vhost),
-  {?MODULE, create_json_struct_for(Vhost, O)};
-  
+  {?MODULE, get_vhost_perms(Vhost)};
+
 get([Username]) -> {?MODULE, get_user_perms(Username)};
 get(Path) -> {"error", erlang:list_to_binary("unhandled: "++Path)}.
 
@@ -52,10 +43,9 @@ post([Username], Data) ->
           map_user_to_vhost(Username, VHost);
         _E -> throw(Error)
       end;
-    ok -> get_user_perms(Username)
+    ok -> {?MODULE, get_user_perms(Username)}
   end;
-  
-    
+
 post(_Path, _Data) -> {"error", <<"unhandled">>}.
 put(_Path, _Data) -> {"error", <<"unhandled">>}.
 
@@ -69,7 +59,7 @@ delete([Username], Data) ->
           unmap_user_from_vhost(Username, VHost);
         _E -> throw(Error)
       end;
-    ok -> get_user_perms(Username)
+    ok -> {?MODULE, get_user_perms(Username)}
   end;
   
 delete(_Path, _Data) -> {"error", <<"unhandled">>}.
@@ -85,8 +75,7 @@ get_user_perms(Username) ->
         _E -> throw(Error)
       end;
     Bin ->
-      ResponseList = [erlang:tuple_to_list(P) || P <- Bin ],
-      _VhostList = [ hd(List) || List <- ResponseList ]
+      [{struct, create_writable_perm_structure(erlang:tuple_to_list(P))} || P <- Bin ]
   end,
   {struct, [
     {name, utils:turn_binary(Username) },
@@ -94,18 +83,15 @@ get_user_perms(Username) ->
   ]}.
 
 get_vhost_perms(Vhost) ->
-  case catch rabint:call({rabbit_access_control, list_vhost_permissions, [Vhost]}) of
-    {badrpc, {'EXIT', Error}} ->
-      case Error of
-        {undef, _Arr} ->
-          ?ERROR("DEPRECATED SUPPORT: To get rid of this message, upgrade to RabbitMQ 1.6", []),
-          list_vhost_users(Vhost);
-        E -> ?ERROR("Got An error: ~p~n", [E])
-      end;
-    Bin -> [erlang:tuple_to_list(P) || P <- Bin ]
-  end.
-  
-    
+  U = list_vhost_users(Vhost),
+      
+  % Now aggregate their data        
+  Users = lists:map(fun(User) ->
+      UserTuple = create_writable_perm_structure(User),
+      {struct, UserTuple }
+    end, U),
+  {struct, [{"name", utils:turn_binary(Vhost)},{"users", Users}]}.
+
 % ConfigurePerm, WritePerm, ReadPerm
 extract_param(Name, Data) ->
   case proplists:get_value(erlang:list_to_binary(Name), Data) of
@@ -122,8 +108,8 @@ extract_vhost(Data) ->
 %%====================================================================
 %% Utils
 %%====================================================================
-create_writable_user_perm_structure(User) ->
-  [Name|Rest] = User,
+create_writable_perm_structure(Perm) ->
+  [Name|Rest] = Perm,
   [Configure|Rest2] = Rest,
   [Write|ReadArr] = Rest2,
   [Read] = ReadArr,
@@ -131,9 +117,6 @@ create_writable_user_perm_structure(User) ->
   [{"name", Name}, {"configure", Configure}, {"write", Write}, {"read", Read}].
   
 
-create_json_struct_for(Vhost, Users) ->
-  {struct, [{"vhosts", [{struct, [{"name", utils:turn_binary(Vhost)}, {"users", Users}]}]}]}.
-  
 %%====================================================================
 %% DEPRECATED SUPPORT
 %%====================================================================
