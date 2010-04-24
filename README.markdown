@@ -169,9 +169,18 @@ Date: Tue, 04 Aug 2009 07:37:32 GMT
 Content-Type: text/json
 Content-Length: 42
 
-{"permissions":[["guest",".*",".*",".*"]]}
+{"permissions":{"vhosts":[{"name":"/", "users":[{"name":"guest","configure":".*","read":".*","write":".*"}]}]}}
 
-# You can specify permissions on a vhost
+# You can list permissions for a user
+curl -i http://localhost:9999/permissions/amr
+HTTP/1.1 200 OK
+Server: MochiWeb/1.0 (Any of you quaids got a smint?)
+Date: Tue, 04 Aug 2009 07:50:33 GMT
+Content-Type: text/json
+Content-Length: 42
+
+{"permissions":{"name":"guest","vhosts":[{"name":"/","configure":".*","write":".*","read":".*"}]}}
+# You can list permissions on a vhost too
 curl -i http://localhost:9999/permissions/vhost/root
 HTTP/1.1 200 OK
 Server: MochiWeb/1.0 (Any of you quaids got a smint?)
@@ -179,7 +188,7 @@ Date: Tue, 04 Aug 2009 07:50:33 GMT
 Content-Type: text/json
 Content-Length: 42
 
-{"permissions":[["guest",".*",".*",".*"]]}
+{"permissions":{"name":"/","users":[{"name":"guest","configure":".*","write":".*","read":".*"}]}}
 # Setting permissions
 curl -i -XPOST -d '{"vhost":"/", "configure":".*", "read":".*", "write":".*"}' \
   http://localhost:9999/permissions/guest
@@ -189,8 +198,16 @@ Date: Tue, 04 Aug 2009 07:55:33 GMT
 Content-Type: text/json
 Content-Length: 38
 
-{"permissions":[["/",".*",".*",".*"]]}
+{"permissions":{"name":"guest","vhosts":[{"name":"/","configure":".*","write":".*","read":".*"}]}}
+# Deleting permissions
+curl -i -XDELETE -d '{"vhost":"/"}' http://localhost:9999/permissions/guest
+HTTP/1.1 200 OK
+Server: MochiWeb/1.0 (Any of you quaids got a smint?)
+Date: Tue, 04 Aug 2009 07:55:33 GMT
+Content-Type: text/json
+Content-Length: 38
 
+{"permissions":{"name":"guest","vhosts":[]}}
 </code></pre>
 
 ## Vhosts
