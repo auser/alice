@@ -216,7 +216,8 @@ Content-Length: 38
 ## Vhosts
 <pre><code>
 # List vhosts
-curl -i http://localhost:9999/vhostsHTTP/1.1 200 OK
+curl -i http://localhost:9999/vhosts
+HTTP/1.1 200 OK
 Server: MochiWeb/1.0 (Any of you quaids got a smint?)
 Date: Tue, 04 Aug 2009 07:57:10 GMT
 Content-Type: text/json
