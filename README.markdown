@@ -180,6 +180,7 @@ Content-Type: text/json
 Content-Length: 42
 
 {"permissions":{"name":"guest","vhosts":[{"name":"/","configure":".*","write":".*","read":".*"}]}}
+
 # You can list permissions on a vhost too
 curl -i http://localhost:9999/permissions/vhost/root
 HTTP/1.1 200 OK
@@ -189,6 +190,7 @@ Content-Type: text/json
 Content-Length: 42
 
 {"permissions":{"name":"/","users":[{"name":"guest","configure":".*","write":".*","read":".*"}]}}
+
 # Setting permissions
 curl -i -XPOST -d '{"vhost":"/", "configure":".*", "read":".*", "write":".*"}' \
   http://localhost:9999/permissions/guest
@@ -199,6 +201,7 @@ Content-Type: text/json
 Content-Length: 38
 
 {"permissions":{"name":"guest","vhosts":[{"name":"/","configure":".*","write":".*","read":".*"}]}}
+
 # Deleting permissions
 curl -i -XDELETE -d '{"vhost":"/"}' http://localhost:9999/permissions/guest
 HTTP/1.1 200 OK
