@@ -7,6 +7,7 @@
 % list_vhosts
 
 get([])      -> {?MODULE, get_all_vhosts()};
+get(["root"]) -> ?MODULE:get(["/"]);
 get([Id])   ->
   Vhosts = lists:map(fun(U) -> erlang:binary_to_list(U) end, get_all_vhosts()),
   case lists:member(Id, Vhosts) of
