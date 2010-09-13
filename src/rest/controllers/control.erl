@@ -18,7 +18,7 @@ get(["status"]) ->
       Apps = [ erlang:list_to_binary(erlang:atom_to_list(Atom)) || {Atom, _Name, _Version} <- JApps],
       
       {value, {nodes, ANodes}} = lists:keysearch(nodes, 1, Bin),
-      Nodes = [ erlang:list_to_binary(erlang:atom_to_list(Node)) || Node <- ANodes],
+      Nodes = [ extract_node_info(NodeInfo) || NodeInfo <- ANodes],
       
       {value, {running_nodes, ARunningNodes}} = lists:keysearch(running_nodes, 1, Bin),
       RunningNodes = [ erlang:list_to_binary(erlang:atom_to_list(Node)) || Node <- ARunningNodes],
@@ -28,7 +28,6 @@ get(["status"]) ->
   end;  
 
 get(_Path) -> {"error", <<"unhandled">>}.
-
 
 post(["stop"], _Data) ->
   rabint:call({rabbit, stop_and_halt, []}),
@@ -65,3 +64,10 @@ delete(["stop_app"], _Data) ->
   {"status", <<"stopped">>};
 
 delete(_Path, _Data) -> {"error", <<"unhandled">>}.
+
+%%====================================================================
+%% PRIVATE
+%%====================================================================
+
+extract_node_info({_NodeStatus, [Node]}) -> extract_node_info(Node);
+extract_node_info(Node) ->	erlang:list_to_binary(erlang:atom_to_list(Node)).
