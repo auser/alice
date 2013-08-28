@@ -1,6 +1,6 @@
 ## Alice
 
-Official release post: <a href="http://willcodeforfoo.com/2009/07/13/announcing-alice/">http://willcodeforfoo.com/2009/07/13/announcing-alice/</a>
+Official release post: <a href="http://willcodeforfoo.com/2009/07/announcing-alice-and-wonderland">http://willcodeforfoo.com/2009/07/announcing-alice-and-wonderland/</a>
 
 <p><a href="http://alicetheapp.com">http://alicetheapp.com</a>.</p>
 
